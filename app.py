@@ -74,9 +74,9 @@ app = Flask(__name__)
 app.secret_key = os.urandom(24)  
 app.permanent_session_lifetime = timedelta(minutes=30)  
 
-# ------------------------------------------
-# Windows Authentication and Privilege Check
-# ------------------------------------------
+
+
+
 
 def windows_auth(username, password, domain=None):
     if not domain:
@@ -418,9 +418,9 @@ def processes_gpu():
 
 from features.web_filtering import block_url, unblock_url
 
-# -------------------------------
-# Web Filtering Routes 
-# -------------------------------
+
+
+
 @app.route('/apply-filter', methods=['POST'])
 def apply_filter():
     url = request.form.get('filter-url')
@@ -487,14 +487,7 @@ def check():
 dns_process = None
 
 def set_dns(dns_server: str):
-    """
-    Uses netsh to point the active interface's DNS to either:
-      - 127.0.0.1 (for local DNS filtering)
-      - 'auto'       (to revert to DHCP)
-    Returns a dict with keys 'success' and 'message'.
-    """
     try:
-        # find the connected interface name
         result = subprocess.run(
             ['netsh', 'interface', 'show', 'interface'],
             capture_output=True, text=True, check=True
@@ -503,7 +496,7 @@ def set_dns(dns_server: str):
         for line in result.stdout.splitlines():
             cols = line.split()
             if len(cols) >= 4 and cols[1] == "Connected":
-                # picks Wi-Fi first, otherwise any Ethernet
+                
                 name = " ".join(cols[3:])
                 if "Wi-Fi" in name or "Wireless" in name:
                     interface = name
@@ -533,28 +526,21 @@ def toggle_dns():
     action = data.get("action")
 
     if action == "on":
-        # 1) First, point DNS at localhost:
         set_res = set_dns("127.0.0.1")
 
-        # 2) Build the absolute path to dns_server.py
         script_dir  = os.path.dirname(os.path.abspath(__file__))
         script_path = os.path.join(script_dir, "dns_server.py")
 
-        # 3) Log what we’re about to run
         print(f"[toggle-dns] Launching DNS filter with: {sys.executable} {script_path}")
 
-        # 4) Launch it, capturing stdout/stderr into a log file so we can see errors:
         log_file = os.path.join(script_dir, "dns_server.log")
-        logfile   = open(log_file, "ab")  # append‐mode; creates if needed
-
+        logfile   = open(log_file, "ab")  
         try:
             dns_process = subprocess.Popen(
                 [sys.executable, script_path],
                 cwd=script_dir,
                 stdout=logfile,
                 stderr=logfile,
-                # remove CREATE_NO_WINDOW while debugging so you see any windows/console
-                # creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0
             )
             set_res["message"] += f" | DNS filter started (PID={dns_process.pid}). Logs → {log_file}"
         except Exception as e:
@@ -563,9 +549,7 @@ def toggle_dns():
         return jsonify(set_res)
 
     elif action == "off":
-        # restore automatic DNS
         set_res = set_dns("auto")
-        # kill the filter process if it’s alive
         if dns_process and dns_process.poll() is None:
             dns_process.terminate()
             set_res["message"] += " | DNS filter stopped."
