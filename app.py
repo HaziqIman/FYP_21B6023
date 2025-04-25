@@ -132,7 +132,7 @@ def login_required(f):
 @app.route('/user-active', methods=['POST'])
 def user_active():
     if 'user_id' not in session:
-        return jsonify({'status': 'expired'}), 401  # Use 401 Unauthorized
+        return jsonify({'status': 'expired'}), 401
 
     session['last_activity'] = datetime.utcnow().isoformat()
     return '', 204
@@ -181,18 +181,14 @@ def collect_hardware_info():
     cpu_info = cpuinfo.get_cpu_info()
     
     def get_gpu_name():
-        # Check for NVIDIA GPUs first
         gpus = GPUtil.getGPUs()
         if gpus:
             return gpus[0].name
-
-        # Fallback to WMIC
         try:
             output = subprocess.check_output("wmic path win32_videocontroller get name", shell=True)
             lines = output.decode().split("\n")
             gpus = [line.strip() for line in lines[1:] if line.strip()]
             
-            # Filter out known virtual/display-only drivers
             blacklist = ["Parsec", "RemoteFX", "Microsoft Basic Display", "VBox", "VMware"]
             filtered = [gpu for gpu in gpus if not any(v in gpu for v in blacklist)]
             
@@ -203,7 +199,6 @@ def collect_hardware_info():
 
 
     info = {
-        # Typically cpu_info['brand_raw'] gives a nice CPU name
         'cpu': cpu_info.get('brand_raw', 'Unknown CPU'),
         
         'ram_gb': round(psutil.virtual_memory().total / (1024 ** 3), 2),
@@ -221,8 +216,6 @@ def collect_hardware_info():
 def firewall_dashboard():
     from features.firewall_policies import get_firewall_policies
     policies = get_firewall_policies()
-    # for p in policies:
-    #     print("DEBUG Policy:", p)
     total_count = len(policies)
     allowed_count = sum(
         1 for p in policies
@@ -250,14 +243,11 @@ def firewall_dashboard():
 
     firewall_logs = get_logs()
     
-    # Aggregate logs by date (YYYY-MM-DD format)
     log_counts = {}
     for log in firewall_logs:
-        # Assumes log["timestamp"] is formatted as "YYYY-MM-DD HH:MM:SS"
         date = log["timestamp"].split(" ")[0]
         log_counts[date] = log_counts.get(date, 0) + 1
 
-    # Determine the "spike" day (the date with the most logs)
     if log_counts:
         spike_date = max(log_counts, key=log_counts.get)
         spike_count = log_counts[spike_date]
@@ -265,7 +255,6 @@ def firewall_dashboard():
         spike_date = "N/A"
         spike_count = 0
 
-    # Prepare data for the chart: sort the dates for display purposes.
     sorted_dates = sorted(log_counts.keys())
     sorted_counts = [log_counts[date] for date in sorted_dates]
 
@@ -494,66 +483,101 @@ def check():
 
 
 
-def set_dns(dns_server):
-    """Sets the system DNS to a specified server or resets it to automatic."""
+
+dns_process = None
+
+def set_dns(dns_server: str):
+    """
+    Uses netsh to point the active interface's DNS to either:
+      - 127.0.0.1 (for local DNS filtering)
+      - 'auto'       (to revert to DHCP)
+    Returns a dict with keys 'success' and 'message'.
+    """
     try:
-        command = 'netsh interface show interface'
-        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
-        output_lines = result.stdout.splitlines()
-
+        # find the connected interface name
+        result = subprocess.run(
+            ['netsh', 'interface', 'show', 'interface'],
+            capture_output=True, text=True, check=True
+        )
         interface = None
-        for line in output_lines:
-            columns = line.split()
-            if len(columns) < 4:
-                continue  # Skip invalid lines
-
-            admin_state, state, type_, interface_name = columns[0], columns[1], columns[2], " ".join(columns[3:])
-            
-            if state == "Connected":  # Ensure it is exactly "Connected"
-                if "Wi-Fi" in interface_name or "Wireless" in interface_name:
-                    interface = interface_name  # Capture full Wi-Fi name
-                    break  # Prefer Wi-Fi if found
-                elif "Ethernet" in interface_name:
-                    interface = interface_name  # Capture the correct Ethernet name
-
+        for line in result.stdout.splitlines():
+            cols = line.split()
+            if len(cols) >= 4 and cols[1] == "Connected":
+                # picks Wi-Fi first, otherwise any Ethernet
+                name = " ".join(cols[3:])
+                if "Wi-Fi" in name or "Wireless" in name:
+                    interface = name
+                    break
+                elif "Ethernet" in name:
+                    interface = name
         if not interface:
-            return {"success": False, "message": "No active network interface detected."}
+            return {"success": False, "message": "No active interface found."}
 
         if dns_server == "auto":
-            command = f'netsh interface ip set dns name="{interface}" dhcp'
-            message = f"DNS reset to automatic for {interface}"
+            cmd = ['netsh', 'interface', 'ip', 'set', 'dns', f'name={interface}', 'dhcp']
+            msg = f"DNS reset to automatic on {interface}"
         else:
-            command = f'netsh interface ip set dns name="{interface}" static {dns_server}'
-            message = f"DNS set to {dns_server} for {interface}"
+            cmd = ['netsh', 'interface', 'ip', 'set', 'dns', f'name={interface}', 'static', dns_server]
+            msg = f"DNS pointed at {dns_server} on {interface}"
 
-        subprocess.run(command, shell=True, check=True)
-        return {"success": True, "message": message}
-
+        subprocess.run(cmd, check=True)
+        return {"success": True, "message": msg}
     except Exception as e:
-        return {"success": False, "message": f"Error: {str(e)}"}
+        return {"success": False, "message": str(e)}
 
 
 @app.route("/toggle-dns", methods=["POST"])
 def toggle_dns():
-    data = request.get_json()
+    global dns_process
+    data = request.get_json() or {}
     action = data.get("action")
 
     if action == "on":
-        result = set_dns("127.0.0.1")
-    elif action == "off":
-        result = set_dns("auto")
-    else:
-        return jsonify({"success": False, "message": "Invalid action."})
+        # 1) First, point DNS at localhost:
+        set_res = set_dns("127.0.0.1")
 
-    return jsonify(result)
+        # 2) Build the absolute path to dns_server.py
+        script_dir  = os.path.dirname(os.path.abspath(__file__))
+        script_path = os.path.join(script_dir, "dns_server.py")
+
+        # 3) Log what we’re about to run
+        print(f"[toggle-dns] Launching DNS filter with: {sys.executable} {script_path}")
+
+        # 4) Launch it, capturing stdout/stderr into a log file so we can see errors:
+        log_file = os.path.join(script_dir, "dns_server.log")
+        logfile   = open(log_file, "ab")  # append‐mode; creates if needed
+
+        try:
+            dns_process = subprocess.Popen(
+                [sys.executable, script_path],
+                cwd=script_dir,
+                stdout=logfile,
+                stderr=logfile,
+                # remove CREATE_NO_WINDOW while debugging so you see any windows/console
+                # creationflags=subprocess.CREATE_NO_WINDOW if os.name=='nt' else 0
+            )
+            set_res["message"] += f" | DNS filter started (PID={dns_process.pid}). Logs → {log_file}"
+        except Exception as e:
+            set_res = {"success": False, "message": f"Failed to launch dns_server.py: {e}"}
+
+        return jsonify(set_res)
+
+    elif action == "off":
+        # restore automatic DNS
+        set_res = set_dns("auto")
+        # kill the filter process if it’s alive
+        if dns_process and dns_process.poll() is None:
+            dns_process.terminate()
+            set_res["message"] += " | DNS filter stopped."
+        else:
+            set_res["message"] += " | No DNS filter was running."
+        return jsonify(set_res)
+
+    else:
+        return jsonify({"success": False, "message": "Invalid action, use 'on' or 'off'."}), 400
 
 def get_dns_status():
-    """
-    Returns { "interface": <str>, "dns_server": <str>, "status": "Active" or "Inactive" }
-    DNS is "Active" only if it's set to 127.0.0.1; otherwise it's "Inactive".
-    """
     try:
-        # 1) Find the currently connected interface
         command = 'netsh interface show interface'
         result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
         output_lines = result.stdout.splitlines()
@@ -562,16 +586,15 @@ def get_dns_status():
         for line in output_lines:
             columns = line.split()
             if len(columns) < 4:
-                continue  # skip short lines
+                continue  
 
             admin_state, state, type_, interface_name = columns[0], columns[1], columns[2], " ".join(columns[3:])
             if state == "Connected":
                 if "Wi-Fi" in interface_name or "Wireless" in interface_name:
                     interface = interface_name
-                    break  # prioritize Wi-Fi
+                    break 
                 elif "Ethernet" in interface_name:
                     interface = interface_name
-                    # no break, in case Wi-Fi shows up further down
 
         if not interface:
             return {
@@ -580,37 +603,26 @@ def get_dns_status():
                 "status": "Inactive"
             }
 
-        # 2) Check whether DNS is static or DHCP
-        # Using "netsh interface ip show addresses name=..."
-        # (You can also use "netsh interface ip show dns" if you prefer.)
         command = f'netsh interface ip show addresses name="{interface}"'
         result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
 
-        # We'll look for "DHCP enabled: Yes" => auto
-        # or an assigned DNS server line containing 127.0.0.1, etc.
         dns_server = None
 
-        # If "DHCP enabled: Yes" => auto
         if "DHCP enabled: Yes" in result.stdout:
             dns_server = "auto"
         else:
-            # Otherwise, parse for a line containing "DNS Servers" or an IP
             for line in result.stdout.splitlines():
                 ip_line = line.strip()
-                # If a line starts with digits and looks like an IP
                 if ip_line and ip_line[0].isdigit() and "." in ip_line:
                     dns_server = ip_line
                     break
         
         if not dns_server:
-            # If we didn't find anything, assume auto
             dns_server = "auto"
 
-        # 3) Status is "Active" only if it's exactly "127.0.0.1"
         if dns_server == "127.0.0.1":
             status = "Active"
         else:
-            # auto or any other static IP => "Inactive" by your definition
             status = "Inactive"
 
         return {
@@ -627,19 +639,13 @@ def get_dns_status():
         }
 
 
-
-# ips_management.user_email = "example@gmail.com"
-
 @app.route('/set_email', methods=['POST'])
 def set_email():
     data = request.get_json()
     email = data.get('email')
     if email:
-        # Update the module variable
         ips_management.user_email = email
-
-        # Update persistent storage
-        config = ips_management.load_config()  # load current config
+        config = ips_management.load_config()
         config["user_email"] = email
         ips_management.save_config(config)
 
@@ -690,8 +696,6 @@ def traffic_chart():
     for i, v in enumerate(counts):
         ax.text(i, v + (max(counts) * 0.01), str(v), ha='center', fontweight='bold', fontsize=20)
 
-    # ax.set_title('Traffic Overview')
-    # ax.set_ylabel('Packet Count')
     plt.tight_layout()
 
     buf = io.BytesIO()
@@ -703,7 +707,6 @@ def traffic_chart():
 
 def get_top_network_processes(duration=1):
     """Return a list of the top 5 processes by network I/O over `duration` seconds."""
-    # sample start stats
     net_io_start = {}
     for proc in psutil.process_iter(['pid', 'name']):
         try:
@@ -718,7 +721,6 @@ def get_top_network_processes(duration=1):
 
     time.sleep(duration)
 
-    # sample end stats and compute diff
     diffs = []
     for proc in psutil.process_iter(['pid', 'name']):
         try:
@@ -738,14 +740,11 @@ def get_top_network_processes(duration=1):
         except (psutil.NoSuchProcess, psutil.AccessDenied):
             continue
 
-    # sort & take top 5
     top5 = sorted(diffs, key=lambda x: x['bytes'], reverse=True)[:10]
-    # convert bytes to kilobytes on the client or here, as you prefer
     return top5
 
 @app.route('/top_network_usage')
 def top_network_usage():
-    # run with a small sampling window so the HTTP response isn't too slow
     top5 = get_top_network_processes(duration=1)
     return jsonify(top5)
 

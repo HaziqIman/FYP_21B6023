@@ -52,7 +52,7 @@ def add_login_event(username):
     conn.close()
 
 
-# 1c) Function to fetch login events
+
 def get_login_events():
     conn = sqlite3.connect(DB_FILE)
     cursor = conn.cursor()
@@ -137,5 +137,5 @@ def get_web_filter_logs():
         } for log in logs
     ]
 
-# Initialize database tables
+
 initialize_db()

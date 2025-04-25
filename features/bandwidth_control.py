@@ -3,12 +3,12 @@ import time
 import win32com.client, platform
 from collections import deque
 
-# Global variables to track instantaneous usage calculations
+
 previous_sent = 0
 previous_received = 0
 previous_time = None
 
-# We'll store (timestamp, sent_mbps, received_mbps) for the last hour
+
 traffic_data = deque()
 
 def get_current_bandwidth_usage():
@@ -36,12 +36,12 @@ def get_current_bandwidth_usage():
     current_received = net_stats.bytes_recv
     current_time = time.time()
 
-    # On the first call, initialize counters
+    
     if previous_time is None:
         previous_sent = current_sent
         previous_received = current_received
         previous_time = current_time
-        # Return zero for instant usage on the very first call
+        
         return {
             'instant': {'sent': 0.0, 'received': 0.0},
             'hour': {
@@ -51,38 +51,38 @@ def get_current_bandwidth_usage():
         }
 
     elapsed_time = current_time - previous_time
-    # Avoid division-by-zero if elapsed_time is 0 or negative
+    
     if elapsed_time <= 0:
         elapsed_time = 1
 
-    # Calculate how many bytes were sent/received in this interval
+    
     diff_sent = current_sent - previous_sent
     diff_received = current_received - previous_received
 
-    # Update previous trackers
+    
     previous_sent = current_sent
     previous_received = current_received
     previous_time = current_time
 
-    # Convert bytes per second to Mbps:
+    
     sent_mbps = (diff_sent * 8) / (1024 * 1024 * elapsed_time)
     received_mbps = (diff_received * 8) / (1024 * 1024 * elapsed_time)
 
-    # Optional clamp to prevent unrealistic spikes
+    
     max_allowed_mbps = 1000
     sent_mbps = min(sent_mbps, max_allowed_mbps)
     received_mbps = min(received_mbps, max_allowed_mbps)
 
-    # Store this data point in a deque
+    
     traffic_data.append((current_time, sent_mbps, received_mbps))
 
-    # Remove data points older than one hour (3600 seconds)
+    
     one_hour_ago = current_time - 3600
     while traffic_data and traffic_data[0][0] < one_hour_ago:
         traffic_data.popleft()
 
-    # Calculate min, max, avg over the last hour
-    # If the deque is empty (very unlikely here), return 0 for stats
+    
+    
     if not traffic_data:
         hour_stats = {
             'min_sent': 0.0, 'max_sent': 0.0, 'avg_sent': 0.0,

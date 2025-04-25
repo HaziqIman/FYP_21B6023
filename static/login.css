@@ -94,7 +94,7 @@ form button:hover {
   .login-title {
     display: flex;
     align-items: center;
-    justify-content: center; /* center the whole line */
-    gap: 10px; /* spacing between image and text */
+    justify-content: center; 
+    gap: 10px; 
     font-size: 2rem;
   }

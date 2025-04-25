@@ -23,7 +23,6 @@
     </div>
     {% if session.logged_in %}
     <div class="links">
-      <!-- Each link has an icon + text. The text is in a <span> so we can hide it when collapsed. -->
       <a href="#" onclick="showSection('main-dashboard')">
         <i class="fas fa-home"></i>
         <span>Dashboard</span>
@@ -66,7 +65,6 @@
     <!-- Dashboard-->
     <div id="main-dashboard" class="section">
       <h1>Firewall Dashboard</h1>
-      <!-- "Small box" for your 2-column bar chart -->
       <div class="dashboard-container">
       
         <div class="dashboard-box stats-box">
@@ -132,7 +130,7 @@
             </a>
           </div>
           <ul id="top-usage-list" class="usage-list">
-            <!-- JS will inject 10 <li> items here -->
+
           </ul>
         </div>
 
@@ -144,12 +142,12 @@
             <i class="fa-solid fa-arrow-up-right-from-square"></i>
           </a>
         </div>
-          <!-- Spike Information Box -->
+
           <div class="spike-info" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; background-color: #f8f8f8;">
             <p><strong>Date:</strong> {{ spike_date }}</p>
             <p><strong>Number of Logs:</strong> {{ spike_count }}</p>
           </div>
-          <!-- Canvas for the Chart.js line chart -->
+
           <canvas id="logsChart" width="400" height="200"></canvas>
         </div>
 
@@ -160,7 +158,7 @@
               <i class="fa-solid fa-arrow-up-right-from-square"></i>
             </a>
           </div>
-          <!-- Show normal vs anomaly chart as an <img> -->
+
           <img 
             src="{{ url_for('traffic_chart') }}" 
             alt="Traffic Chart" 
@@ -168,8 +166,6 @@
           />
         </div>
   
-        <!-- Box #2: Policy Count -->
-        <!-- Example: Firewall Policies Box -->
       <div class="dashboard-box stats-box">
         <div class="dashboard-box-header">
         <h3>Firewall Policies</h3>
@@ -184,22 +180,18 @@
           </div>
           <div class="stat-item">
             <span class="label">Allowed Policies:</span>
-            <!-- Show allowed in green -->
             <span class="value allowed">{{ allowed_count }}</span>
           </div>
           <div class="stat-item">
             <span class="label">Blocked Policies:</span>
-            <!-- Show blocked in red -->
             <span class="value blocked">{{ blocked_count }}</span>
           </div>
           <div class="stat-item">
             <span class="label">Enabled Policies:</span>
-            <!-- Show blocked in red -->
             <span class="value allowed">{{ enabled_count }}</span>
           </div>
           <div class="stat-item">
             <span class="label">Disabled Policies:</span>
-            <!-- Show blocked in red -->
             <span class="value blocked">{{ disabled_count }}</span>
           </div>
         </div>
@@ -214,17 +206,14 @@
       </div>
         <div class="stat-item">
           <span class="label">Interface:</span>
-          <!-- Show blocked in red -->
           <span class="value">{{ dns_info.interface }}</span>
         </div>
         <div class="stat-item">
           <span class="label">DNS Set To:</span>
-          <!-- Show blocked in red -->
           <span class="value">{{ dns_info.dns_server }}</span>
         </div>
         <div class="stat-item">
           <span class="label">Status:</span>
-          <!-- Show blocked in red -->
           <span class="value ">{{ dns_info.status }}</span>
         </div>
       </div>
@@ -262,14 +251,12 @@
       </div>
 
       </div>
-      <!-- Later you can add more small boxes for firewall policy counts, etc. -->
   </div>
 
     <!-- Firewall Policies Section -->
     <div id="firewall-policies" class="section">
       <h1 style="margin:20px 0px 20px 0px">Active Firewall Policies</h1>
 
-      <!-- Button to open the policy creation modal -->
       <div class="action-bar">
         <button id="create-policy-button">Create Policy</button>
         <input type="text" id="search-input" placeholder="Search rule name..." />
@@ -280,7 +267,6 @@
     </div>
       
       
-      <!-- Table to display existing firewall policies -->
       <div id="table-container">
       <table id="policy-table" border="1">
           <thead>
@@ -296,12 +282,10 @@
               </tr>
           </thead>
           <tbody>
-              <!-- Policies will be dynamically populated here -->
           </tbody>
       </table>
     </div>
 
-      <!-- Modal for adding a new firewall policy -->
       <div id="policy-modal" class="modal">
         <div class="modal-content">
             <span id="close-modal" class="close">&times;</span>
@@ -426,7 +410,6 @@
       <div id="bandwidth-usage">
         <h3>Current Bandwidth Usage</h3>
         <div style="height: 300px;">
-          <!-- Canvas for our Chart.js line chart -->
           <canvas id="bandwidthChart"></canvas>
         </div>
       </div>
@@ -482,7 +465,6 @@
         <button class="ips-button" id="stop-monitoring">Stop Anomaly Detection</button>
       </div>
       
-      <!-- Updated Table Structure -->
       <table id="anomalies-table">
         <thead>
           <tr>
@@ -497,7 +479,6 @@
           </tr>
         </thead>
         <tbody id="anomalies-body">
-          <!-- Rows will be dynamically added here -->
         </tbody>
       </table>
     </div>
@@ -537,7 +518,6 @@
     
     <h3>Allow/Disallow Categories</h3>
     <div class="category-container">
-      <!-- Categories will be inserted dynamically -->
     </div>
     <button id="apply-rules">Apply</button>
 
@@ -569,7 +549,6 @@
             </tr>
           </thead>
           <tbody id="logs-table">
-            <!-- Logs will be dynamically inserted here -->
           </tbody>
         </table>
       </div>
@@ -591,39 +570,34 @@
           return;
         }
   
-        // ensure we have exactly ten slots
         const top10 = data.slice(0, 10);
         const maxBytes = top10[0].bytes || 1;
   
         top10.forEach((proc, i) => {
           const li = document.createElement('li');
   
-          // rank
           const rank = Object.assign(document.createElement('span'), {
             className: 'rank',
             textContent: (i + 1) + '.'
           });
           li.appendChild(rank);
   
-          // name
           const name = Object.assign(document.createElement('span'), {
             className: 'name',
             textContent: proc.name
           });
           li.appendChild(name);
   
-          // bar
           const barContainer = document.createElement('div');
           barContainer.className = 'bar-container';
           const bar = document.createElement('div');
           bar.className = 'bar';
-          // percent of max (min 5%)
           const pct = Math.max((proc.bytes / maxBytes) * 100, 5);
           bar.style.width = pct + '%';
           barContainer.appendChild(bar);
           li.appendChild(barContainer);
   
-          // size label
+
           const kb = Object.assign(document.createElement('span'), {
             className: 'kb',
             textContent: (proc.bytes / 1024).toFixed(1) + ' KB'
@@ -637,13 +611,11 @@
       }
     }
   
-    // initial load + refresh every 10 s
     fetchTopUsage();
     setInterval(fetchTopUsage, 10_000);
   </script>
   
   <script>
-    // When the user enters an email, send it to the server
     document.getElementById('user-email').addEventListener('change', function() {
       fetch('/set_email', {
         method: 'POST',
@@ -659,11 +631,9 @@
   </script>
     
   <script>
-  // Ensure the variables are passed from Flask (using the tojson filter)
   var chartLabels = {{ labels|tojson }};
   var chartData = {{ counts|tojson }};
   
-  // Create the chart when the DOM is fully loaded
   document.addEventListener('DOMContentLoaded', function() {
     var ctx = document.getElementById('logsChart').getContext('2d');
     var logsChart = new Chart(ctx, {
@@ -700,18 +670,14 @@
 </script>
 
   <script>
-    // JavaScript to toggle visibility of sections
     function showSection(sectionId) {
-      // Hide all sections
       const sections = document.querySelectorAll('.section');
       sections.forEach(section => section.style.display = 'none');
 
-      // Show the selected section
       const selectedSection = document.getElementById(sectionId);
       selectedSection.style.display = 'block';
     }
 
-    // Initially show the firewall policies section
     window.onload = function() {
       showSection('main-dashboard');
     };
@@ -725,7 +691,6 @@
     }
   </script>
 
-<!-- Process Details Modal -->
 <div id="processModal-BC" class="modal-BC" style="display:none;">
   <div class="modal-content-BC" style="background: #fff; padding: 20px; border-radius: 5px; width: 80%; max-width: 500px; margin: auto; position: relative;">
     <span id="closeModal-BC" style="position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>

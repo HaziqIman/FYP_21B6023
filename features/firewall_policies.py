@@ -4,14 +4,14 @@ import json
 
 def get_firewall_policies():
     try:
-        # Run netsh to get firewall rules
+        
         command = "netsh advfirewall firewall show rule name=all"
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
 
         if result.returncode != 0:
             raise Exception(result.stderr)
 
-        # Parse netsh output
+        
         raw_output = result.stdout.splitlines()
         policies = []
         current_policy = {}
@@ -19,7 +19,7 @@ def get_firewall_policies():
         for line in raw_output:
             line = line.strip()
             if line.startswith("Rule Name:"):
-                # Save the previous policy and start a new one
+                
                 if current_policy:
                     policies.append(current_policy)
                 current_policy = {"RuleName": line.split(": ", 1)[1]}
@@ -38,7 +38,7 @@ def get_firewall_policies():
             elif line.startswith("LocalPort:"):
                 current_policy["LocalPort"] = line.split(": ", 1)[1]
 
-        # Add the last policy
+        
         if current_policy:
             policies.append(current_policy)
 
@@ -50,31 +50,31 @@ def get_firewall_policies():
 
 def add_firewall_policy(data):
     try:
-        # Ensure action is correctly mapped: "Deny" should be "Block"
+        
         action_mapping = {
             "Allow": "allow",
             "Deny": "block"
         }
-        action = action_mapping.get(data["action"], "allow")  # Default to allow
+        action = action_mapping.get(data["action"], "allow")  
 
-        # Fix direction mapping
+        
         direction_mapping = {
             "Inbound": "in",
             "Outbound": "out"
         }
-        direction = direction_mapping.get(data["direction"], "in")  # Default to in
+        direction = direction_mapping.get(data["direction"], "in")  
 
-        # Default to 'any' if no IP is provided
-        local_ip = data.get("source_ip", "any")  # Maps to LocalIP
-        remote_ip = data.get("destination_ip", "any")  # Maps to RemoteIP
+        
+        local_ip = data.get("source_ip", "any")  
+        remote_ip = data.get("destination_ip", "any")  
 
-        # Convert protocol to uppercase for consistency
+        
         protocol = data['protocol'].upper()
 
-        # Construct the base command
+        
         command = [
             "netsh", "advfirewall", "firewall", "add", "rule",
-            f'name="{data["rule_name"]}"',  # Ensures the name is quoted
+            f'name="{data["rule_name"]}"',  
             f"dir={direction}",
             f"action={action}",
             f"protocol={protocol}",
@@ -83,24 +83,24 @@ def add_firewall_policy(data):
             "enable=yes"
         ]
 
-        # If the protocol is not ICMP, include ports
+        
         if protocol != "ICMPV4" and protocol != "ICMPV6":
             command.extend([
                 f"localport={data['port']}",
-                "remoteport=any"  # Fix for TCP/UDP
+                "remoteport=any"  
             ])
 
-        # Debug: Print the command before execution
+        
         print("Executing command:", " ".join(command))
 
-        # Execute the command and capture output
+        
         result = subprocess.run(command, capture_output=True, text=True, shell=True)
 
-        # Debug: Log command output
+        
         print("STDOUT:", result.stdout)
         print("STDERR:", result.stderr)
 
-        # Check if command execution was successful
+        
         if result.returncode == 0:
             return {"success": True}
         else:

@@ -3,7 +3,7 @@ import numpy as np
 import subprocess
 import threading
 import socket
-# import shap, lime
+
 from datetime import datetime
 
 from scapy.all import sniff, IP, raw
@@ -15,9 +15,9 @@ from sendgrid.helpers.mail import Mail
 
 import joblib
 
-# =============================
-# Global Variables & Initialization
-# =============================
+
+
+
 
 model = tf.keras.models.load_model('newest_model.keras') 
 stop_monitoring_flag = False 
@@ -26,14 +26,14 @@ scaler = MinMaxScaler()
 
 THRESHOLD = 0.25
 
-# (ADDED) Load your RF model and its vectorizer.
-# Make sure the filenames match your actual .pkl files.
+
+
 rf_model = joblib.load('lgbm_model.pkl')
 rf_vectorizer = joblib.load('vectorizer_lgbm.pkl')
 
-# =============================
-# Database
-# =============================
+
+
+
 
 def get_anomalies():
     """
@@ -48,7 +48,7 @@ def get_anomalies():
     """
     conn = sqlite3.connect('anomalies.db')
     cursor = conn.cursor()
-    # (MODIFIED) select attack_type if you added that column:
+    
     cursor.execute('''
         SELECT hex_data, reconstruction_error, timestamp, source_ip, destination_ip, attack_type
         FROM anomalies
@@ -68,10 +68,6 @@ def get_anomalies():
             'attack_type': row[5] if len(row) > 5 else None
         })
     return anomalies_list
-
-# =============================
-# Utility Functions
-# =============================
 
 def get_local_ip():
     """
@@ -97,9 +93,9 @@ def extract_features(hex_data):
     return scaled_features
 
 def packet_to_hex(packet):
-    # Ensure it’s an IP packet, then get just the IP payload bytes
+    
     if IP in packet:
-        ip_bytes = raw(packet[IP])   # strip off the 14 B Ethernet header
+        ip_bytes = raw(packet[IP])   
         return ip_bytes.hex()
     else:
         return bytes(packet).hex()
@@ -123,14 +119,9 @@ def show_notification(source_ip, destination_ip, reconstruction_error, timestamp
         timeout=10 
     )
 
-# =============================
-# New Email Alert Function
-# =============================
-
 import hexpacketparser
 
-# Your SendGrid API Key
-SENDGRID_API_KEY = "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"  # Replace with your actual API key
+SENDGRID_API_KEY = "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"  
 
 def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, timestamp, user_email, attack_type=None):
     """
@@ -181,7 +172,7 @@ def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, 
 }
 
     
-    # Parse the packet and get an HTML formatted string with the packet details
+    
     parsed_packet_html = hexpacketparser.parse_packet(hex_data)
     
     subject = "🚨 Network Anomaly Detected!"
@@ -195,7 +186,7 @@ def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, 
         <p><b>🔹 Timestamp:</b> {timestamp}</p>
     """
 
-    # (ADDED) If we have an attack type from the RF, include it
+    
     if attack_type:
         attack_desc = attackDescriptions.get(attack_type, "N/A")
         html_content += f"<p><b>🔹 Attack Type:</b> {attack_type}</p>"
@@ -213,7 +204,7 @@ def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, 
     """
 
     message = Mail(
-        from_email="haziqiman567@gmail.com",  # Replace with your verified SendGrid sender email
+        from_email="haziqiman567@gmail.com",  
         to_emails=user_email,
         subject=subject,
         html_content=html_content
@@ -225,10 +216,6 @@ def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, 
         print(f"📧 Email alert sent to {user_email} (Status: {response.status_code})")
     except Exception as e:
         print(f"❌ Failed to send email alert via SendGrid: {e}")
-
-# =============================
-# Firewall Block/Unblock
-# =============================
 
 def block_ip(ip_address, direction):
     """
@@ -279,7 +266,7 @@ def unblock_packet(source_ip, destination_ip):
     conn = sqlite3.connect('anomalies.db')
     cursor = conn.cursor()
 
-    # Find the anomaly record - you might refine how you look this up
+    
     cursor.execute('''
         SELECT id FROM anomalies
         WHERE source_ip=? AND destination_ip=?
@@ -294,7 +281,7 @@ def unblock_packet(source_ip, destination_ip):
 
     anomaly_id = row[0]
 
-    # Now get the rule name
+    
     cursor.execute('SELECT rule_name FROM anomaly_rules WHERE anomaly_id=?', (anomaly_id,))
     rule_row = cursor.fetchone()
 
@@ -304,9 +291,9 @@ def unblock_packet(source_ip, destination_ip):
 
     rule_name = rule_row[0]
 
-    # Attempt to remove the firewall block rule
+    
     if unblock_ip(rule_name):
-        # If the firewall rule was successfully removed, delete the anomaly record
+        
         cursor.execute('DELETE FROM anomaly_rules WHERE anomaly_id=?', (anomaly_id,))
         cursor.execute('DELETE FROM anomalies WHERE id=?', (anomaly_id,))
 
@@ -318,9 +305,6 @@ def unblock_packet(source_ip, destination_ip):
         conn.close()
         return {'error': 'Failed to unblock IP.'}
 
-# =============================
-# Packet Monitoring
-# =============================
 
 import json
 import os
@@ -336,7 +320,7 @@ def load_config():
         with open(CONFIG_FILE, "r") as f:
             config = json.load(f)
     else:
-        # Create a default config with the default email.
+        
         config = {"user_email": "example@gmail.com"}
         save_config(config)
     return config
@@ -348,16 +332,16 @@ def save_config(config):
     with open(CONFIG_FILE, "w") as f:
         json.dump(config, f, indent=4)
 
-# Initialize the configuration
+
 config = load_config()
-# Use the loaded email as the global email.
+
 user_email = config.get("user_email", "example@gmail.com")
 
 def increment_normal_count():
     conn = sqlite3.connect('anomalies.db')
     cursor = conn.cursor()
 
-    # Increment normal_count in the single row
+    
     cursor.execute('''
         UPDATE traffic_counts
         SET normal_count = normal_count + 1
@@ -397,12 +381,12 @@ def monitor_packets_callback(packet):
     global normal_count, anomaly_count
     """Callback for Scapy sniff. Processes a single packet for anomaly detection."""
     if stop_monitoring_flag:
-        return  # If we have a global stop flag, we can ignore further packets
+        return  
 
     if IP not in packet:
-        return  # We only process IP packets
+        return  
 
-    # Convert packet to hex data and run it through the model
+    
     hex_data = packet_to_hex(packet)
     features = extract_features(hex_data).reshape(1, -1)
     reconstructed = model.predict(features)
@@ -414,24 +398,24 @@ def monitor_packets_callback(packet):
         destination_ip = packet[IP].dst
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-        # (ADDED) Use the Random Forest to classify the attack type
+        
         rf_input = rf_vectorizer.transform([hex_data]) 
-        predicted_attack_type = rf_model.predict(rf_input)[0]  # get the predicted label
+        predicted_attack_type = rf_model.predict(rf_input)[0]  
 
-        # Determine direction and block accordingly
+        
         rule_name = None
         if source_ip == LOCAL_IP and destination_ip != "Unknown":
-            # Outgoing anomaly => block outgoing
+            
             rule_name = block_ip(destination_ip, 'out')
         elif destination_ip == LOCAL_IP and source_ip != "Unknown":
-            # Incoming anomaly => block incoming
+            
             rule_name = block_ip(source_ip, 'in')
 
-        # Save anomaly details to the database
+        
         conn = sqlite3.connect('anomalies.db')
         cursor = conn.cursor()
 
-        # (MODIFIED) Insert attack_type if you added a column for it
+        
         cursor.execute('''
             INSERT INTO anomalies
             (hex_data, reconstruction_error, timestamp, source_ip, destination_ip, attack_type)
@@ -439,7 +423,7 @@ def monitor_packets_callback(packet):
         ''', (hex_data, reconstruction_error, timestamp, source_ip, destination_ip, predicted_attack_type))
         anomaly_id = cursor.lastrowid
 
-        # If a rule was created, store it
+        
         if rule_name:
             cursor.execute('''
                 INSERT OR REPLACE INTO anomaly_rules
@@ -450,7 +434,7 @@ def monitor_packets_callback(packet):
         conn.commit()
         conn.close()
 
-        # Show system notification (include attack_type)
+        
         show_notification(
             source_ip,
             destination_ip,
@@ -459,7 +443,7 @@ def monitor_packets_callback(packet):
             attack_type=predicted_attack_type
         )
 
-        # Use the user-provided email instead of a hard-coded one, and include the attack_type
+        
         send_email_alert(
             hex_data,
             source_ip,
@@ -491,10 +475,8 @@ def get_top_attack_types(limit=5):
     rows = cursor.fetchall()
     conn.close()
     
-    # rows will be like: [(attack_type1, count1), (attack_type2, count2), ...]
+    
     return rows
-
-
 
 
 def sniff_stop_filter(_):

@@ -1,46 +1,36 @@
-import sqlite3
+import sqlite3, os
 import socketserver
 from dnslib import DNSRecord, RR, A
-import os
 
 CATEGORY_DB_PATH = "urldb_files"
 
-# Function to check if a domain is blocked
 def is_url_blocked(domain):
     for db_name in os.listdir(CATEGORY_DB_PATH):
-        db_path = os.path.join(CATEGORY_DB_PATH, db_name)
-        conn = sqlite3.connect(db_path)
+        conn = sqlite3.connect(os.path.join(CATEGORY_DB_PATH, db_name))
         c = conn.cursor()
         c.execute("SELECT 1 FROM porn_urls WHERE url = ?", (domain,))
-        result = c.fetchone()
+        if c.fetchone():
+            conn.close()
+            return True
         conn.close()
-        if result:
-            return True  # Domain is blocked
-    return False  # Domain is NOT blocked
+    return False
 
-# DNS Request Handler
 class DNSHandler(socketserver.BaseRequestHandler):
     def handle(self):
-        data = self.request[0]
-        socket = self.request[1]
-        request = DNSRecord.parse(data)
-        domain = str(request.q.qname).rstrip(".")
-
-        if is_url_blocked(domain):
-            print(f"❌ BLOCKED: {domain}")  # Debugging
-            reply = request.reply()
-            reply.add_answer(RR(domain, rdata=A("0.0.0.0"), ttl=60))  # Block the domain
+        data, sock = self.request
+        req = DNSRecord.parse(data)
+        qname = str(req.q.qname).rstrip(".")
+        if is_url_blocked(qname):
+            print(f" BLOCKED: {qname}")
+            reply = req.reply()
+            reply.add_answer(RR(qname, rdata=A("0.0.0.0"), ttl=60))
         else:
-            print(f"✅ ALLOWED: {domain} (Forwarding to Google DNS)")  # Debugging
-            forward_response = DNSRecord.parse(DNSRecord.question(domain).send("8.8.8.8", 53))  # Forward request
-            reply = forward_response
+            print(f" ALLOWED: {qname}")
+            # forward to Google DNS
+            reply = DNSRecord.parse(DNSRecord.question(qname).send("8.8.8.8", 53))
+        sock.sendto(reply.pack(), self.client_address)
 
-        socket.sendto(reply.pack(), self.client_address)
-
-# Start DNS Server
 if __name__ == "__main__":
+    print(" DNS Server Running on Port 53…")
     with socketserver.UDPServer(("0.0.0.0", 53), DNSHandler) as server:
-        print("🟢 DNS Server Running on Port 53...")
         server.serve_forever()
-
-

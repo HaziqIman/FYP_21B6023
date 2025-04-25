@@ -9,7 +9,7 @@ body {
 
 .sidebar {
   height: 100%;
-  width: 200px;   /* default expanded width */
+  width: 200px; 
   position: fixed;
   top: 0;
   left: 0;
@@ -22,7 +22,6 @@ body {
   box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
 }
 
-/* NEW: Toggle button inside the sidebar (the hamburger icon) */
 .sidebar-toggle {
   color: #fff;
   font-size: 1.5rem;
@@ -47,7 +46,7 @@ body {
   text-decoration: none;
   font-size: 21px;
   color: white;
-  display: flex;           /* NEW: so icon and text can align */
+  display: flex;       
   align-items: center;
   vertical-align: middle;
   margin-bottom: 20px;
@@ -60,7 +59,7 @@ body {
 }
 
 .sidebar a i {
-  margin-right: 0px;      /* space between icon and text */
+  margin-right: 0px;   
   vertical-align: middle;
 }
 
@@ -69,14 +68,13 @@ body {
   color: black;
 }
 
-/* The logout button at bottom */
 .sidebar .logout {
   margin-top: auto;
   margin-bottom: 20px;
   padding-bottom: 20px;
   font-size: 20px;
   gap: 8px;
-  display: flex;           /* ensure icon + text alignment */
+  display: flex;          
   align-items: center;
 }
 
@@ -84,7 +82,7 @@ body {
 .header-bar {
   position: fixed;
   top: 0;
-  left: 200px;  /* Expanded sidebar position */
+  left: 200px; 
   right: 0;
   height: 65px;
   background-color: #333;
@@ -111,13 +109,11 @@ body {
 
 
 
-/* NEW: Collapsed sidebar styling */
 .sidebar.collapsed {
-  width: 60px;  /* narrower width */
+  width: 60px; 
   align-items: center;
 }
 
-/* Hide the text <span> when collapsed, leaving only icons */
 .sidebar.collapsed a span {
   display: none;
 }
@@ -126,35 +122,26 @@ body {
   margin: 0;
 }
 
-/* .sidebar.collapsed a{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-} */
-
 .sidebar.collapsed .logout span {
   display: none;
 }
 
-/* Shift the main content when sidebar is collapsed */
 .content {
-  margin-top: 100px;   /* So the content starts below the fixed header */
-  margin-left: 220px;  /* Offset to the right of the sidebar */
+  margin-top: 100px; 
+  margin-left: 220px;
   transition: margin-left 0.3s ease;
 }
 
 .sidebar.collapsed ~ .header-bar {
-  left: 60px;  /* Update to the sidebar’s collapsed width */
+  left: 60px; 
 }
 
 .sidebar.collapsed ~ .content {
-  margin-left: 80px;   /* collapsed offset */
+  margin-left: 80px;  
 }
 
-/* Section Header Styling */
+
 .section {
-  /* padding: 20px; */
-  /* border: 1px solid #ccc; */
   margin-bottom: 20px;
   padding-right: 20px;
   margin-left: 15px;
@@ -167,11 +154,7 @@ body {
   position: center;
 }
 
-/* button {
-  margin-top: 10px;
-} */
 
-/* Table Styles */
 #anomalies-table {
   width: 100%;
   height: 500px;
@@ -227,7 +210,6 @@ body {
   width:30%;
 }
 
-/* Modal styling */
 .modal {
   display: none;
   position: fixed;
@@ -261,20 +243,11 @@ body {
   color: black;
 }
 
-/* Form styling */
 .form-group {
   margin-bottom: 15px;
 }
 
-/* label {
-  width:100%;
-  display: block;
-  font-weight: bold;
-  margin-bottom: 5px;
-  margin-top:10px;
-} */
 
-/* Input Fields */
 input[type="text"], 
 select, 
 textarea {
@@ -284,18 +257,15 @@ textarea {
   border-radius: 5px;
 }
 
-/* Textarea */
 textarea {
   height: 60px;
   resize: none;
 }
 
-/* Checkboxes */
 input[type="checkbox"] {
   margin-right: 5px;
 }
 
-/* Toggle Button Styling for Action */
 .toggle-buttons {
   display: flex;
   border-radius: 5px;
@@ -303,7 +273,6 @@ input[type="checkbox"] {
   border: 1px solid #ccc;
 }
 
-/* Individual Toggle Button */
 .toggle-btn {
   flex: 1;
   padding: 10px 20px;
@@ -314,7 +283,6 @@ input[type="checkbox"] {
   font-weight: bold;
 }
 
-/* Default Inactive Buttons */
 #accept-btn {
   background-color: #f0f0f0;
   color: #333;
@@ -325,20 +293,20 @@ input[type="checkbox"] {
   color: #333;
 }
 
-/* Active Button Styles */
+
 .toggle-btn.active {
   color: white;
 }
 
 #accept-btn.active {
-  background-color: #4CAF50; /* Green */
+  background-color: #4CAF50; 
 }
 
 #deny-btn.active {
-  background-color: #D9534F; /* Red */
+  background-color: #D9534F;
 }
 
-/* Enable Policy */
+
 .enable-policy {
   display: flex;
   align-items: center;
@@ -348,14 +316,13 @@ input[type="checkbox"] {
   margin-left: 10px;
 }
 
-/* Form Buttons */
+
 .form-buttons {
   display: flex;
   justify-content: space-between;
   margin-top: 20px;
 }
 
-/* OK and Cancel Buttons */
 .ok-btn {
   background-color: #4CAF50;
   color: white;
@@ -374,7 +341,7 @@ input[type="checkbox"] {
   cursor: pointer;
 }
 
-/* Hover Effects */
+
 .ok-btn:hover {
   background-color: #45a049;
 }
@@ -393,8 +360,8 @@ table {
   width: 100%;
   background-color: #fff;
   font-family: 'Courier New', Courier, monospace;
-  table-layout: fixed; /* Fixed layout to allow wrapping */
-  word-wrap: break-word; /* Ensure long words wrap */
+  table-layout: fixed; 
+  word-wrap: break-word; 
   overflow-wrap: break-word;
 }
 
@@ -414,7 +381,7 @@ table td {
   max-width: 300px;
 }
 
-/* Adjust table row hover effect for better clarity */
+
 table tr:hover {
   background-color: #f2f2f2;
 }
@@ -427,7 +394,7 @@ table tr:hover {
 }
 
 #policy-table {
-  width: 100%; /* Ensure the table takes up full width */
+  width: 100%;
   border-collapse: collapse;
 }
 
@@ -445,9 +412,9 @@ table tr:hover {
 #policy-table th {
   background-color: #eb7d3e;
   color: white;
-  position: sticky; /* Make the header sticky */
-  top: 0; /* Stick to the top of the container */
-  z-index: 1; /* Ensure the header stays on top of the content */
+  position: sticky; 
+  top: 0;
+  z-index: 1; 
 }
 
 #policy-table tr:nth-child(even) {
@@ -460,7 +427,7 @@ table tr:hover {
 
 #create-policy-button{
   margin : 10px 0px 10px 0px;
-  background-color: white; /* Green */
+  background-color: white; 
   color: #eb7d3e;
   font-size: 16px;
   /* font-weight: bold; */
@@ -486,15 +453,13 @@ table tr:hover {
 
 
 
-/* Align the Create Policy button and search box */
 .action-bar {
   display: flex;
   align-items: center;
-  gap: 10px; /* Space between elements */
+  gap: 10px; 
   margin-bottom: 15px;
 }
 
-/* Styling for the search input field */
 #search-input {
   padding: 8px;
   width: 600px;
@@ -503,7 +468,6 @@ table tr:hover {
   font-size: 16px;
 }
 
-/* Styling for the search button */
 #search-button, #refresh-button {
   padding: 8px 12px;
   background-color: #eb7d3e;
@@ -521,13 +485,12 @@ table tr:hover {
 }
 
 
-/* Form styling adjustments */
 .form-group {
   display: flex;
   align-items: center;
   gap: 15px;
   margin-bottom: 15px;
-  width: 100%; /* Ensure full width */
+  width: 100%; 
 }
 
 .form-group label {
@@ -544,7 +507,6 @@ table tr:hover {
   box-sizing: border-box;
 }
 
-/* Keep existing styles for action buttons */
 .form-group.action-group {
   display: block;
 }
@@ -570,12 +532,12 @@ table tr:hover {
 
 #bandwidth-tables {
   display: flex;
-  justify-content: center; /* Center tables horizontally */
-  align-items: center; /* Align tables in the middle vertically */
-  gap: 50px; /* Space between the two tables */
-  width: 100%; /* Ensure it spans the full width */
-  margin: auto; /* Centering the whole div if needed */
-  flex-wrap: wrap; /* Prevent overflow issues */
+  justify-content: center; 
+  align-items: center; 
+  gap: 50px; 
+  width: 100%; 
+  margin: auto; 
+  flex-wrap: wrap;
 }
 
 #CGM-monitor{
@@ -606,7 +568,7 @@ table tr:hover {
 
 
 .modal-BC {
-  display: none; /* This is the default, and JS will change it to flex */
+  display: none; 
   position: fixed;
   z-index: 1000;
   left: 0;
@@ -744,7 +706,7 @@ label[for="filter-category"] {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
-  width: 180px; /* Adjusted width */
+  width: 180px; 
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
@@ -752,13 +714,13 @@ label[for="filter-category"] {
   justify-content: space-between;
 }
 .category-text {
-  flex-grow: 1; /* Allows text to adjust */
+  flex-grow: 1; 
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: 10px; /* Adds space between text and select */
+  padding-right: 10px; 
 }
 select {
-  width: 90px; /* Fixed width */
+  width: 90px;
 }
 
 .highlighted {
@@ -783,9 +745,9 @@ select {
 
 
 .dashboard-container {
-  display: flex;         /* or display: grid; */
-  flex-wrap: wrap;       /* wrap if the screen is narrow */
-  gap: 10px;             /* space between boxes */
+  display: flex;        
+  flex-wrap: wrap;     
+  gap: 10px;          
   margin-top: 20px;
 }
 .dashboard-box {
@@ -816,7 +778,7 @@ select {
 .stats-box h3 {
   margin: 0;
   padding: 10px 15px;
-  background-color: #eb7d3e; /* or your chosen color */
+  background-color: #eb7d3e; 
   color: #fff;
   /* border-radius: 5px 5px 0 0; */
   font-size: 1.2em;
@@ -844,11 +806,11 @@ select {
 }
 
 .stat-item .value.allowed {
-  color: green; /* or #28a745 */
+  color: green; 
 }
 
 .stat-item .value.blocked {
-  color: red;   /* or #dc3545 */
+  color: red;  
 }
 
 .ips-button, .dns-button{
@@ -903,38 +865,33 @@ select {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 10px; /* adjust padding as needed */
-  background-color: #eb7d3e; /* or your chosen color */
+  padding: 0 10px; 
+  background-color: #eb7d3e;
 }
 
-/* Style the arrow button */
 .dashboard-box-arrow {
   padding: 5px;
   margin-right:10px;
   text-decoration: none;
   font-size: 1.1rem;
-  color: inherit;  /* use inherit to match surrounding text or add a specific color */
+  color: inherit;  
   transition: color 0.3s ease;
   color: #ffffff;
 }
 
-/* Optional: hover effect for visual feedback */
 .dashboard-box-arrow:hover {
-  /* color: #000000;  change this to your desired hover color */
   background-color: #ffbb8b;
   transition: background-color 0.5s, color 0.5s;
 }
 
-/* Container to hold all cards in one row */
 #bandwidth-summary {
   display: flex;
-  gap: 1rem;                /* space between cards */
+  gap: 1rem;            
   margin: 1.5rem 0;
 }
 
-/* Individual card */
 .summary-card {
-  flex: 1;                  /* all cards equal width */
+  flex: 1;               
   background: #fff;
   border-radius: 4px;
   padding: 1rem;
@@ -942,50 +899,42 @@ select {
   box-shadow: 0 1px 4px rgba(0,0,0,0.1);
 }
 
-/* inbound = green background */
 .summary-card.inbound {
-  background: #e6f9e6;    /* very light green */
+  background: #e6f9e6;   
   /* border: 1px solid #28a745; */
 }
 
-/* outbound = purple background */
 .summary-card.outbound {
-  background: #f2e6ff;    /* very light purple */
+  background: #f2e6ff;  
   /* border: 1px solid #6f42c1; */
 }
 
-/* The small label at top of card */
 .summary-card .label {
   font-size: 0.85rem;
   color: #666;
   margin-bottom: 0.25rem;
 }
 
-/* The big number */
 .summary-card .value {
   font-size: 2.5rem;
   font-weight: 600;
   line-height: 1;
 }
 
-/* The unit (e.g. “Mbps”) */
 .summary-card .unit {
   font-size: 0.9rem;
   color: #555;
 }
 
-/* Change line – reuse for both up and down */
 .summary-card .change {
   font-size: 0.8rem;
   margin-top: 0.5rem;
 }
 
-/* Up = green */
 .summary-card .change.up {
   color: #28a745;
 }
 
-/* Down = red */
 .summary-card .change.down {
   color: #dc3545;
 }
@@ -994,7 +943,7 @@ select {
   width: 150px;
 }
 
-/* remove default bullets & padding */
+
 .usage-list {
   list-style: none;
   margin: 0;
@@ -1002,7 +951,6 @@ select {
   background: rgb(255, 255, 255);
 }
 
-/* each row as grid: rank | name | bar | size */
 .usage-list li {
   display: grid;
   grid-template-columns: 32px 1fr 2fr 60px;
@@ -1016,25 +964,22 @@ select {
   padding-left: 0px;
 }
 
-/* subtle separator */
 .usage-list li + li {
   border-top: 1px solid rgb(255, 255, 255);
 }
 
 
-/* alternating background */
 .usage-list li:nth-child(odd) {
   background: rgb(224, 224, 224);
 }
 
-/* rank number */
 .usage-list .rank {
   font-weight: bold;
   text-align: right;
   color: #000000;
 }
 
-/* process name, truncate overflow */
+
 .usage-list .name {
   padding: 0 8px;
   white-space: nowrap;
@@ -1043,7 +988,7 @@ select {
   color: #000000;
 }
 
-/* bar container */
+
 .usage-list .bar-container {
   height: 8px;
   background: rgb(255, 255, 255);
@@ -1052,13 +997,11 @@ select {
   margin: 0 8px;
 }
 
-/* actual bar (fill) */
 .usage-list .bar {
   height: 100%;
   background: #4caf50;
 }
 
-/* kilobytes label */
 .usage-list .kb {
   text-align: right;
   color: #000000;

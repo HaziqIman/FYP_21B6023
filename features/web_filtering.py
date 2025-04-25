@@ -2,7 +2,7 @@ import win32pdh
 import sys
 import subprocess
 
-# Path to the hosts file in Windows
+
 hosts_path = r"C:\Windows\System32\drivers\etc\hosts"
 
 def run_as_admin():
@@ -32,7 +32,7 @@ def block_url(url, is_admin_func):
     """
     Appends a block entry (0.0.0.0) to the Windows hosts file to block a given URL.
     """
-    # Check admin status if needed
+    
     if not is_admin_func():
         print("This script needs to be run as Administrator. Re-running with elevated privileges...")
         run_as_admin()

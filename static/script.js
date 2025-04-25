@@ -64,35 +64,34 @@ document.addEventListener('DOMContentLoaded', function () {
       .catch(error => console.error("Error:", error));
   });
 
-  // DNS Filtering Toggle
   document.getElementById("enable-dns").addEventListener("click", () => {
     fetch("/toggle-dns", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "on" })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "on" })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => alert(data.message))
-    .catch(error => console.error("Error:", error));
-});
-
-document.getElementById("disable-dns").addEventListener("click", () => {
+    .catch(err => console.error("Error:", err));
+  });
+  
+  document.getElementById("disable-dns").addEventListener("click", () => {
     fetch("/toggle-dns", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "off" })
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "off" })
     })
-    .then(response => response.json())
+    .then(res => res.json())
     .then(data => alert(data.message))
-    .catch(error => console.error("Error:", error));
-});
+    .catch(err => console.error("Error:", err));
+  });
 
 
   document.getElementById('unblock-button').addEventListener('click', async function () {
-    // Grab the URL from the same text box
+    
     const urlToUnblock = document.getElementById('filter-url').value;
   
-    // Make a POST request to /unblock-url/<the URL>
+    
     const response = await fetch('/unblock-url/' + encodeURIComponent(urlToUnblock), {
       method: 'POST'
     });
@@ -102,7 +101,7 @@ document.getElementById("disable-dns").addEventListener("click", () => {
   });
   
   document.getElementById("filter-form").addEventListener("submit", async (event) => {
-    event.preventDefault();  // Stop the normal form submission
+    event.preventDefault();  
     const formData = new FormData(event.target);
   
     const response = await fetch("/apply-filter", {
@@ -112,25 +111,25 @@ document.getElementById("disable-dns").addEventListener("click", () => {
     const result = await response.json();
   
     if (result.status === "success") {
-      alert(result.message); // or show it on the page
+      alert(result.message); 
     } else {
       alert("Error: " + result.message);
     }
   });
 
-// --- 1) In‑memory arrays (persisted to localStorage) ---
+
   let inboundData  = [];
   let outboundData = [];
   let timestamps   = [];
 
-  // --- 2) Filter window lengths (ms) ---
+  
   const filterDurations = {
     minute: 60 * 1000,
     hour:   60 * 60 * 1000,
     day:    24 * 60 * 60 * 1000
   };
 
-  // --- 3) Load from localStorage if present ---
+  
   function loadSavedData() {
     const ts  = JSON.parse(localStorage.getItem('bw.timestamps') || 'null');
     const inb = JSON.parse(localStorage.getItem('bw.inbound')    || 'null');
@@ -149,14 +148,14 @@ document.getElementById("disable-dns").addEventListener("click", () => {
     }
   }
 
-  // --- 4) Save current arrays into localStorage ---
+  
   function saveData() {
     localStorage.setItem('bw.timestamps', JSON.stringify(timestamps));
     localStorage.setItem('bw.inbound',    JSON.stringify(inboundData));
     localStorage.setItem('bw.outbound',   JSON.stringify(outboundData));
   }
 
-  // --- 5) Update min/max/avg table cells ---
+  
   function updateTableMetrics(type, dataArray) {
     if (!dataArray.length) return;
     const max = Math.max(...dataArray).toFixed(2);
@@ -167,7 +166,7 @@ document.getElementById("disable-dns").addEventListener("click", () => {
     document.getElementById(type + 'Min').textContent = min;
   }
 
-  // --- 6) Initialize Chart.js ---
+  
   const ctx = document.getElementById('bandwidthChart').getContext('2d');
   const bandwidthChart = new Chart(ctx, {
     type: 'line',
@@ -225,7 +224,7 @@ document.getElementById("disable-dns").addEventListener("click", () => {
     },
   });
 
-  // --- 7) Seed chart with any saved data ---
+  
   loadSavedData();
   bandwidthChart.data.labels                = timestamps.map(ts => ts.toISOString());
   bandwidthChart.data.datasets[0].data      = inboundData;
@@ -234,7 +233,7 @@ document.getElementById("disable-dns").addEventListener("click", () => {
   updateTableMetrics('inbound', inboundData);
   updateTableMetrics('outbound', outboundData);
 
-  // --- 8) Fetch fresh data, update arrays/chart/table, persist ---
+  
   function updateBandwidthChart() {
     fetch('/get-bandwidth-usage')
       .then(r => r.json())
@@ -248,14 +247,14 @@ document.getElementById("disable-dns").addEventListener("click", () => {
         inboundData.push(data.instant.received);
         outboundData.push(data.instant.sent);
 
-        // drop old points
+        
         while (timestamps.length && timestamps[0] < cutoff) {
           timestamps.shift();
           inboundData.shift();
           outboundData.shift();
         }
 
-        // re-draw
+        
         bandwidthChart.data.labels           = timestamps.map(ts => ts.toISOString());
         bandwidthChart.data.datasets[0].data = inboundData;
         bandwidthChart.data.datasets[1].data = outboundData;
@@ -269,7 +268,7 @@ document.getElementById("disable-dns").addEventListener("click", () => {
       .catch(console.error);
   }
 
-  // --- 9) Wire up filter dropdown & polling ---
+  
   document.getElementById('timeFilter')
     .addEventListener('change', updateBandwidthChart);
   setInterval(updateBandwidthChart, 10_000);
@@ -313,12 +312,12 @@ document.getElementById("disable-dns").addEventListener("click", () => {
               ctx.textBaseline = "middle";
               ctx.textAlign = "center";
   
-              // Get the percentage value
+              
               const text = chart.data.datasets[0].data[0] + "%";
               const textX = width / 2;
               const textY = height / 2;
   
-              ctx.fillStyle = "#333"; // Text color
+              ctx.fillStyle = "#333"; 
               ctx.fillText(text, textX, textY);
               ctx.save();
           }
@@ -362,12 +361,12 @@ function createGaugeChart(ctx, initialValue, maxValue, unit) {
               ctx.textBaseline = "middle";
               ctx.textAlign = "center";
   
-              // Get the percentage value
+              
               const text = chart.data.datasets[0].data[0] + "°C";
               const textX = width / 2;
               const textY = height / 2;
   
-              ctx.fillStyle = "#333"; // Text color
+              ctx.fillStyle = "#333"; 
               ctx.fillText(text, textX, textY);
               ctx.save();
           }
@@ -375,7 +374,7 @@ function createGaugeChart(ctx, initialValue, maxValue, unit) {
     });
 }
 
-// Get the canvas contexts for each chart.
+
 const diskCtx = document.getElementById('diskChart').getContext('2d');
 const gpuTempCtx = document.getElementById('gpuTempChart').getContext('2d');
 
@@ -383,7 +382,7 @@ const cpuCtx = document.getElementById('cpuChart').getContext('2d');
 const gpuCtx = document.getElementById('gpuChart').getContext('2d');
 const memoryCtx = document.getElementById('memoryChart').getContext('2d');
 
-// Create the charts with initial values.
+
 const diskChart = createDonutChart(diskCtx, 0);
 const gpuTempChart = createGaugeChart(gpuTempCtx, 30, 100, '°C');
 
@@ -391,7 +390,7 @@ const cpuChart = createDonutChart(cpuCtx, 0);
 const gpuChart = createDonutChart(gpuCtx, 0);
 const memoryChart = createDonutChart(memoryCtx, 0);
 
-// Function to update the charts with new data.
+
 function updateCharts(data) {
     diskChart.data.datasets[0].data = [data.disk, 100 - data.disk];
     diskChart.update();
@@ -409,7 +408,7 @@ function updateCharts(data) {
     memoryChart.update();
 }
 
-// Function to fetch metrics from the Flask backend.
+
 function fetchMetrics() {
     fetch('/metrics')
         .then(response => response.json())
@@ -419,12 +418,12 @@ function fetchMetrics() {
         .catch(error => console.error('Error fetching metrics:', error));
 }
 
-// Fetch new metrics every 5 seconds.
+
 setInterval(fetchMetrics, 5000);
 fetchMetrics();
 
 function usageToColor(percent) {
-  // 120 (green) to 0 (red)
+  
   const hue = Math.max(0, 120 - percent * 1.2);
   return `hsl(${hue}, 100%, 40%)`;
 }
@@ -433,7 +432,7 @@ function updateStats() {
   fetch('/api/stats')
     .then(res => res.json())
     .then(data => {
-      // CPU
+      
       const cpuPercent = data.cpu;
       const cpuBar = document.getElementById('cpu-bar');
       cpuBar.style.width = `${cpuPercent}%`;
@@ -441,7 +440,7 @@ function updateStats() {
       cpuBar.style.backgroundColor = usageToColor(cpuPercent);
       document.getElementById('cpu-used-text').innerText = `${cpuPercent.toFixed(1)}% used`;
 
-      // Memory
+      
       const memPercent = data.memory.used_percent;
       const memBar = document.getElementById('mem-bar');
       memBar.style.width = `${memPercent}%`;
@@ -450,7 +449,7 @@ function updateStats() {
       document.getElementById('mem-used-text').innerText =
         `${memPercent.toFixed(1)}% used (${data.memory.used_gb} GB / ${data.memory.total_gb} GB)`;
 
-      // Disk
+      
       const diskPercent = data.disk.used_percent;
       const diskBar = document.getElementById('disk-bar');
       diskBar.style.width = `${diskPercent}%`;
@@ -469,10 +468,10 @@ const modalTitle    = document.getElementById('modalTitle-BC');
 const processList   = document.getElementById('processList-BC');
 const closeModalBtn = document.getElementById('closeModal-BC');
 
-// Utility function to display the modal.
+
 function showProcessModal(title, processes, resource) {
     modalTitle.textContent = title;
-    processList.innerHTML = '';  // Clear previous items
+    processList.innerHTML = '';  
 
     if (processes.length === 0) {
         const li = document.createElement('li');
@@ -494,7 +493,7 @@ function showProcessModal(title, processes, resource) {
     modal.style.display = 'flex';
 }
 
-// Function to fetch and show process details for a resource.
+
 function fetchAndShowProcesses(resource) {
     let endpoint = '';
     let title = '';
@@ -513,13 +512,13 @@ function fetchAndShowProcesses(resource) {
     fetch(endpoint)
       .then(response => response.json())
       .then(data => {
-          // The API returns an object with key "processes"
+          
           showProcessModal(title, data.processes || [], resource);
       })
       .catch(error => console.error('Error fetching process data:', error));
 }
 
-// Attach click event listeners to the charts (using the updated IDs).
+
 document.getElementById('cpuChart').addEventListener('click', function() {
     fetchAndShowProcesses('cpu');
 });
@@ -532,19 +531,19 @@ document.getElementById('gpuChart').addEventListener('click', function() {
     fetchAndShowProcesses('gpu');
 });
 
-// Close the modal when the close button is clicked.
+
 closeModalBtn.addEventListener('click', function() {
     modal.style.display = 'none';
 });
 
-// Optional: close modal if clicking outside of modal content.
+
 window.addEventListener('click', function(event) {
     if (event.target === modal) {
         modal.style.display = 'none';
     }
 });
 
-let allLogs = []; // Store all logs globally for filtering
+let allLogs = []; 
 
 function fetchAllLogs() {
   console.log("Fetching firewall, web‐filter, and login logs...");
@@ -555,22 +554,22 @@ function fetchAllLogs() {
     fetch('/api/login_events').then(res => res.json())
   ])
   .then(([firewallLogs, webFilterLogs, loginEvents]) => {
-    // Combine all three sources
+    
     const combinedLogs = [
       ...firewallLogs,
       ...webFilterLogs,
       ...loginEvents
     ];
 
-    // Sort by timestamp descending (latest first)
+    
     combinedLogs.sort((a, b) =>
       new Date(b.timestamp) - new Date(a.timestamp)
     );
 
-    // Store globally for search/filter
+    
     allLogs = combinedLogs;
 
-    // Render into your table
+    
     displayLogs(allLogs);
   })
   .catch(err => {
@@ -603,12 +602,12 @@ function displayLogs(logs) {
   });
 }
 
-// Search function
+
 function searchLogs() {
   const searchText = document.getElementById('search-input-log').value.trim().toLowerCase();
   
   if (!searchText) {
-    displayLogs(allLogs); // Show all logs if search box is empty
+    displayLogs(allLogs); 
     return;
   }
 
@@ -619,7 +618,7 @@ function searchLogs() {
   displayLogs(filteredLogs);
 }
 
-// Filter by date function
+
 function filterLogsByDate() {
   const selectedDate = document.getElementById('date-filter').value;
   
@@ -634,20 +633,20 @@ function filterLogsByDate() {
   displayLogs(filteredLogs);
 }
 
-// Initial fetch
+
 fetchAllLogs();
 
-// Fetch logs every 5 seconds
+
 setInterval(fetchAllLogs, 60000);
 
-// Attach event listeners to buttons
+
 document.getElementById('refresh-button-log').addEventListener('click', fetchAllLogs);
 document.getElementById('search-input-log').addEventListener('input', searchLogs);
 document.getElementById('filter-button-log').addEventListener('click', filterLogsByDate);
 
 
 
-  // Start monitoring button
+  
   document.getElementById('start-monitoring').addEventListener('click', function () {
     fetch('/start-monitoring')
       .then(response => response.json())
@@ -663,7 +662,7 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
       });
   });
 
-  // Stop monitoring button
+  
   document.getElementById('stop-monitoring').addEventListener('click', function () {
     fetch('/stop-monitoring')
       .then(response => response.json())
@@ -679,7 +678,7 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
       });
   });
 
-  // Fetch and display anomalies
+  
   function fetchAnomalies() {
 
     const attackDescriptions = {
@@ -735,10 +734,10 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
 
           const attackDesc = attackDescriptions[anomaly.attack_type] || "N/A";
           
-          // For each anomaly, we create a <tr>:
+          
           const row = document.createElement('tr');
           
-          // We'll store source/dest IP in data attributes
+          
           row.innerHTML = `
             <td>${localTime}</td>
             <td>${anomaly.reconstruction_error.toFixed(4)}</td>
@@ -769,7 +768,7 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
           anomaliesBody.appendChild(row);
         });
   
-        // Attach event listeners for all "Unblock" buttons
+        
         document.querySelectorAll('.unblock-btn').forEach(button => {
           button.addEventListener('click', function () {
             const sourceIP = this.getAttribute('data-source-ip');
@@ -789,7 +788,7 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
             .then(data => {
               if (data.message) {
                 alert(data.message);
-                fetchAnomalies(); // Refresh table after unblocking
+                fetchAnomalies(); 
               } else {
                 alert(data.error);
               }
@@ -804,10 +803,10 @@ document.getElementById('filter-button-log').addEventListener('click', filterLog
   
   
 
-  // Poll the server for anomalies every 5 seconds
+  
   setInterval(fetchAnomalies, 5000);
 
-  // Initial fetch of anomalies on page load
+  
   fetchAnomalies();
 });
 
@@ -820,36 +819,36 @@ document.addEventListener('DOMContentLoaded', () => {
   const policyTable = document.querySelector('#policy-table tbody');
   const searchInput = document.getElementById('search-input');
   const searchButton = document.getElementById('search-button');
-  const cancelBtn = document.querySelector('.cancel-btn'); // Cancel button
+  const cancelBtn = document.querySelector('.cancel-btn'); 
   const acceptBtn = document.getElementById("accept-btn");
   const denyBtn = document.getElementById("deny-btn");
 
-  let policiesData = []; // Store fetched policies for filtering
-  let selectedAction = "Allow"; // Default Action
+  let policiesData = []; 
+  let selectedAction = "Allow"; 
 
-  // Function to open the modal
+  
   createPolicyButton.addEventListener('click', () => {
       policyModal.style.display = 'block';
   });
 
-  // Function to close the modal
+  
   closeModal.addEventListener('click', () => {
       policyModal.style.display = 'none';
   });
 
-  // Cancel Button - Close Modal without Submitting
+  
   cancelBtn.addEventListener('click', () => {
       policyModal.style.display = 'none';
   });
 
-  // Close the modal when clicking outside of it
+  
   window.addEventListener('click', (event) => {
       if (event.target === policyModal) {
           policyModal.style.display = 'none';
       }
   });
 
-  // Helper function to call the backend to disable a policy
+  
 async function disablePolicy(ruleName) {
   try {
     const response = await fetch('/api/disable_firewall_policy', {
@@ -860,7 +859,7 @@ async function disablePolicy(ruleName) {
     const result = await response.json();
     if (result.success) {
       alert(`Policy "${ruleName}" disabled successfully!`);
-      // Refresh the table
+      
       fetchPolicies();
     } else {
       alert('Error disabling policy: ' + (result.message || 'Unknown error'));
@@ -871,7 +870,7 @@ async function disablePolicy(ruleName) {
   }
 }
 
-// Helper function to call the backend to delete a policy
+
 async function deletePolicy(ruleName) {
   try {
     const response = await fetch('/api/delete_firewall_policy', {
@@ -882,7 +881,7 @@ async function deletePolicy(ruleName) {
     const result = await response.json();
     if (result.success) {
       alert(`Policy "${ruleName}" deleted successfully!`);
-      // Refresh the table
+      
       fetchPolicies();
     } else {
       alert('Error deleting policy: ' + (result.message || 'Unknown error'));
@@ -893,13 +892,13 @@ async function deletePolicy(ruleName) {
   }
 }
 
-  // Function to render policies in the table
+  
   const renderPolicies = (filteredPolicies) => {
-    policyTable.innerHTML = ''; // Clear the table
+    policyTable.innerHTML = ''; 
   
     if (filteredPolicies.length > 0) {
       filteredPolicies.forEach((policy) => {
-        // Create main row
+        
         const row = document.createElement('tr');
         row.innerHTML = `
           <td>${policy.RuleName || 'N/A'}</td>
@@ -912,16 +911,16 @@ async function deletePolicy(ruleName) {
           <td>${policy.Enabled || 'N/A'}</td>
         `;
   
-        // Create detail row (hidden by default)
+        
         const detailRow = document.createElement('tr');
         detailRow.classList.add('detail-row');
         detailRow.style.display = 'none';
   
-        // We'll create a single cell that spans all columns
+        
         const detailCell = document.createElement('td');
         detailCell.colSpan = 8;
   
-        // Add the two action buttons
+        
         detailCell.innerHTML = `
           <div class="action-buttons">
             <button class="disable-btn">Disable</button>
@@ -931,7 +930,7 @@ async function deletePolicy(ruleName) {
   
         detailRow.appendChild(detailCell);
   
-        // When user clicks on the main row, toggle detail row
+        
         row.addEventListener('click', () => {
           if (detailRow.style.display === 'none') {
             detailRow.style.display = 'table-row';
@@ -940,25 +939,25 @@ async function deletePolicy(ruleName) {
           }
         });
   
-        // Attach event listeners to the disable and delete buttons
+        
         const disableBtn = detailCell.querySelector('.disable-btn');
         const deleteBtn = detailCell.querySelector('.delete-btn');
   
         disableBtn.addEventListener('click', (e) => {
-          // Prevent the row click from re-toggling
+          
           e.stopPropagation();
           disablePolicy(policy.RuleName);
         });
   
         deleteBtn.addEventListener('click', (e) => {
           e.stopPropagation();
-          // Confirm deletion
+          
           if (confirm(`Are you sure you want to delete policy "${policy.RuleName}"?`)) {
             deletePolicy(policy.RuleName);
           }
         });
   
-        // Append both rows to the table
+        
         policyTable.appendChild(row);
         policyTable.appendChild(detailRow);
       });
@@ -967,26 +966,26 @@ async function deletePolicy(ruleName) {
     }
   };
 
-  // Fetch and store policies
+  
   const fetchPolicies = async () => {
       try {
           const response = await fetch('/api/firewall_policies');
           if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
-          policiesData = await response.json(); // Store fetched policies
-          renderPolicies(policiesData); // Render them initially
+          policiesData = await response.json(); 
+          renderPolicies(policiesData); 
       } catch (error) {
           console.error('Error fetching policies:', error);
           policyTable.innerHTML = '<tr><td colspan="8">Error loading policies</td></tr>';
       }
   };
 
-  // Search Function (Search by Rule Name or Port)
+  
   const searchPolicies = () => {
       const searchTerm = searchInput.value.toLowerCase();
 
       const filteredPolicies = policiesData.filter(policy => {
           const ruleName = policy.RuleName ? policy.RuleName.toLowerCase() : '';
-          const port = policy.LocalPort ? policy.LocalPort.toString().toLowerCase() : ''; // Ensure Port is treated as a string
+          const port = policy.LocalPort ? policy.LocalPort.toString().toLowerCase() : ''; 
           
           return ruleName.includes(searchTerm) || port.includes(searchTerm);
       });
@@ -994,26 +993,26 @@ async function deletePolicy(ruleName) {
       renderPolicies(filteredPolicies);
   };
 
-  // Attach event listener to search button
+  
   searchButton.addEventListener('click', searchPolicies);
 
-  // Enable real-time searching as user types
+  
   searchInput.addEventListener('input', searchPolicies);
 
-  // Toggle Buttons for Action Selection (Allow/Deny)
+  
   acceptBtn.addEventListener("click", function () {
       acceptBtn.classList.add("active");
       denyBtn.classList.remove("active");
-      selectedAction = "Allow"; // Set action to Allow
+      selectedAction = "Allow"; 
   });
 
   denyBtn.addEventListener("click", function () {
       denyBtn.classList.add("active");
       acceptBtn.classList.remove("active");
-      selectedAction = "Deny"; // Set action to Deny
+      selectedAction = "Deny"; 
   });
 
-  // Add a new policy
+  
   policyForm.addEventListener('submit', async (event) => {
       event.preventDefault();
 
@@ -1024,7 +1023,7 @@ async function deletePolicy(ruleName) {
           port: document.getElementById('port').value,
           protocol: document.getElementById('protocol').value,
           direction: document.getElementById('direction').value,
-          action: selectedAction, // Use selected Action value
+          action: selectedAction, 
       };
 
       try {
@@ -1037,10 +1036,10 @@ async function deletePolicy(ruleName) {
           const result = await response.json();
           if (result.success) {
               alert('Policy added successfully!');
-              policyModal.style.display = 'none'; // Close the modal
-              fetchPolicies(); // Refresh the table
+              policyModal.style.display = 'none'; 
+              fetchPolicies(); 
               policyForm.reset();
-              selectedAction = "Allow"; // Reset action to default
+              selectedAction = "Allow"; 
               acceptBtn.classList.add("active");
               denyBtn.classList.remove("active");
           } else {
@@ -1052,34 +1051,34 @@ async function deletePolicy(ruleName) {
       }
   });
 
-  // Fetch and display policies on page load
+  
   fetchPolicies();
 
   const refreshButton = document.getElementById('refresh-button');
 
-  // Attach event listener to the refresh button
+  
   refreshButton.addEventListener('click', fetchPolicies);
 });
 
 const refreshButton = document.getElementById('refresh-button');
 
-// Attach event listener to the refresh button
+
 refreshButton.addEventListener('click', fetchPolicies);
 
 disableBtn.addEventListener('click', (e) => {
   e.stopPropagation();
   disablePolicy(policy.RuleName)
     .then(() => {
-      fetchPolicies(); // Re-fetch to see updated enable status
+      fetchPolicies(); 
     });
 });
 
 
 document.getElementById('unblock-button').addEventListener('click', async function () {
-  // Grab the URL from the same text box
+  
   const urlToUnblock = document.getElementById('filter-url').value;
 
-  // Make a POST request to /unblock-url/<the URL>
+  
   const response = await fetch('/unblock-url/' + encodeURIComponent(urlToUnblock), {
     method: 'POST'
   });
@@ -1089,7 +1088,7 @@ document.getElementById('unblock-button').addEventListener('click', async functi
 });
 
 document.getElementById("filter-form").addEventListener("submit", async (event) => {
-  event.preventDefault();  // Stop the normal form submission
+  event.preventDefault();  
   const formData = new FormData(event.target);
 
   const response = await fetch("/apply-filter", {
@@ -1099,7 +1098,7 @@ document.getElementById("filter-form").addEventListener("submit", async (event) 
   const result = await response.json();
 
   if (result.status === "success") {
-    alert(result.message); // or show it on the page
+    alert(result.message); 
   } else {
     alert("Error: " + result.message);
   }
