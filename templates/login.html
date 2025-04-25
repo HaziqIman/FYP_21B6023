@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - Firewall</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='login.css') }}">
+  <script src="{{ url_for('static', filename='login.js') }}" defer></script>
+</head>
+
+<body>
+
+  <div class="login-container">
+    <h1 class="Center login-title">
+      <img src="{{ url_for('static', filename='logo3rd.png') }}" alt="Icon" class="login-icon">
+      Login
+    </h1>
+    <form id="login-form" method="POST" action="/login">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div id="login-error" style="color: red; display: none;">Invalid credentials. Please try again.</div>
+  </div>
+
+</body>
+
+</html>

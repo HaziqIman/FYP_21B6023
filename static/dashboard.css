@@ -1,0 +1,1066 @@
+/* Sidebar Styles */
+body {
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
+
+
+
+.sidebar {
+  height: 100%;
+  width: 200px;   /* default expanded width */
+  position: fixed;
+  top: 0;
+  left: 0;
+  background-color: #333;
+  padding-top: 10px;
+  padding-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.3s ease-in-out;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.3);
+}
+
+/* NEW: Toggle button inside the sidebar (the hamburger icon) */
+.sidebar-toggle {
+  color: #fff;
+  font-size: 1.5rem;
+  padding: 10px 15px;
+  cursor: pointer;
+  margin-bottom: 15px;
+}
+
+.sidebar-toggle:hover{
+  background-color: #eb7d3e;
+  color: black;
+}
+
+.sidebar .links {
+  flex-grow: 1;
+}
+
+
+
+.sidebar a {
+  padding: 10px 15px;
+  text-decoration: none;
+  font-size: 21px;
+  color: white;
+  display: flex;           /* NEW: so icon and text can align */
+  align-items: center;
+  vertical-align: middle;
+  margin-bottom: 20px;
+  transition: background-color 0.2s;
+}
+
+.sidebar span{
+ vertical-align: middle;
+ margin-left: 10px;
+}
+
+.sidebar a i {
+  margin-right: 0px;      /* space between icon and text */
+  vertical-align: middle;
+}
+
+.sidebar a:hover {
+  background-color: #eb7d3e;
+  color: black;
+}
+
+/* The logout button at bottom */
+.sidebar .logout {
+  margin-top: auto;
+  margin-bottom: 20px;
+  padding-bottom: 20px;
+  font-size: 20px;
+  gap: 8px;
+  display: flex;           /* ensure icon + text alignment */
+  align-items: center;
+}
+
+
+.header-bar {
+  position: fixed;
+  top: 0;
+  left: 200px;  /* Expanded sidebar position */
+  right: 0;
+  height: 65px;
+  background-color: #333;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  transition: left 0.3s ease-in-out;
+  gap: 10px;
+  font-weight: bold;
+}
+
+.header-icon {
+  height: 50px;
+  width: 50px;
+  object-fit: contain;
+}
+
+
+
+
+
+
+/* NEW: Collapsed sidebar styling */
+.sidebar.collapsed {
+  width: 60px;  /* narrower width */
+  align-items: center;
+}
+
+/* Hide the text <span> when collapsed, leaving only icons */
+.sidebar.collapsed a span {
+  display: none;
+}
+
+.sidebar.collapsed a i {
+  margin: 0;
+}
+
+/* .sidebar.collapsed a{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+} */
+
+.sidebar.collapsed .logout span {
+  display: none;
+}
+
+/* Shift the main content when sidebar is collapsed */
+.content {
+  margin-top: 100px;   /* So the content starts below the fixed header */
+  margin-left: 220px;  /* Offset to the right of the sidebar */
+  transition: margin-left 0.3s ease;
+}
+
+.sidebar.collapsed ~ .header-bar {
+  left: 60px;  /* Update to the sidebar’s collapsed width */
+}
+
+.sidebar.collapsed ~ .content {
+  margin-left: 80px;   /* collapsed offset */
+}
+
+/* Section Header Styling */
+.section {
+  /* padding: 20px; */
+  /* border: 1px solid #ccc; */
+  margin-bottom: 20px;
+  padding-right: 20px;
+  margin-left: 15px;
+}
+
+.Center {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 3rem;
+  position: center;
+}
+
+/* button {
+  margin-top: 10px;
+} */
+
+/* Table Styles */
+#anomalies-table {
+  width: 100%;
+  height: 500px;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+#anomalies-table th,
+#anomalies-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+#anomalies-table th {
+  background-color: #eb7d3e;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+#anomalies-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#anomalies-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+#anomalies-table td button {
+  padding: 5px 10px;
+  font-size: 12px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+#anomalies-table td button:hover {
+  background-color: #0056b3;
+}
+
+.hex-code-cell {
+  max-height: 200px; 
+  overflow-y: auto;
+  word-break: break-word;  
+
+}
+
+#anomalies-table th:nth-child(3),
+#anomalies-table td:nth-child(3){
+  width:30%;
+}
+
+/* Modal styling */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.modal-content {
+  background-color: #fff;
+  margin: 10% auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 35%;
+  border-radius: 10px;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: black;
+}
+
+/* Form styling */
+.form-group {
+  margin-bottom: 15px;
+}
+
+/* label {
+  width:100%;
+  display: block;
+  font-weight: bold;
+  margin-bottom: 5px;
+  margin-top:10px;
+} */
+
+/* Input Fields */
+input[type="text"], 
+select, 
+textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Textarea */
+textarea {
+  height: 60px;
+  resize: none;
+}
+
+/* Checkboxes */
+input[type="checkbox"] {
+  margin-right: 5px;
+}
+
+/* Toggle Button Styling for Action */
+.toggle-buttons {
+  display: flex;
+  border-radius: 5px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+
+/* Individual Toggle Button */
+.toggle-btn {
+  flex: 1;
+  padding: 10px 20px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+  font-weight: bold;
+}
+
+/* Default Inactive Buttons */
+#accept-btn {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+#deny-btn {
+  background-color: #f0f0f0;
+  color: #333;
+}
+
+/* Active Button Styles */
+.toggle-btn.active {
+  color: white;
+}
+
+#accept-btn.active {
+  background-color: #4CAF50; /* Green */
+}
+
+#deny-btn.active {
+  background-color: #D9534F; /* Red */
+}
+
+/* Enable Policy */
+.enable-policy {
+  display: flex;
+  align-items: center;
+}
+
+.enable-policy input {
+  margin-left: 10px;
+}
+
+/* Form Buttons */
+.form-buttons {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+/* OK and Cancel Buttons */
+.ok-btn {
+  background-color: #4CAF50;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+/* Hover Effects */
+.ok-btn:hover {
+  background-color: #45a049;
+}
+
+.cancel-btn:hover {
+  background-color: #d32f2f;
+}
+
+
+
+
+
+table {
+  margin: auto;
+  border-collapse: collapse;
+  width: 100%;
+  background-color: #fff;
+  font-family: 'Courier New', Courier, monospace;
+  table-layout: fixed; /* Fixed layout to allow wrapping */
+  word-wrap: break-word; /* Ensure long words wrap */
+  overflow-wrap: break-word;
+}
+
+table th, table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+table th {
+  background-color: #eb7d3e;
+  color: white;
+}
+
+table td {
+  color: #333;
+  max-width: 300px;
+}
+
+/* Adjust table row hover effect for better clarity */
+table tr:hover {
+  background-color: #f2f2f2;
+}
+
+
+
+#table-container {
+  max-height: 680px;
+  overflow-y: auto;
+}
+
+#policy-table {
+  width: 100%; /* Ensure the table takes up full width */
+  border-collapse: collapse;
+}
+
+#policy-table th, #policy-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+#policy-table th:nth-child(1),
+#policy-table td:nth-child(1){
+  width: 30%;
+}
+
+#policy-table th {
+  background-color: #eb7d3e;
+  color: white;
+  position: sticky; /* Make the header sticky */
+  top: 0; /* Stick to the top of the container */
+  z-index: 1; /* Ensure the header stays on top of the content */
+}
+
+#policy-table tr:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+#policy-table tr:hover {
+  background-color: #f1f1f1;
+}
+
+#create-policy-button{
+  margin : 10px 0px 10px 0px;
+  background-color: white; /* Green */
+  color: #eb7d3e;
+  font-size: 16px;
+  /* font-weight: bold; */
+  border: 2px solid #eb7d3e;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+#create-policy-button::before {
+  content: "+";
+  font-size: 25px;
+  font-weight: bold;
+}
+
+#create-policy-button:hover {
+  background-color: #eb7d3e;
+  color:white;
+}
+
+
+
+
+/* Align the Create Policy button and search box */
+.action-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px; /* Space between elements */
+  margin-bottom: 15px;
+}
+
+/* Styling for the search input field */
+#search-input {
+  padding: 8px;
+  width: 600px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 16px;
+}
+
+/* Styling for the search button */
+#search-button, #refresh-button {
+  padding: 8px 12px;
+  background-color: #eb7d3e;
+  color: white;
+  border: 1px solid #eb7d3e;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#search-button:hover, #refresh-button:hover {
+  background-color: white;
+  color:#eb7d3e;
+  border: 1px solid #eb7d3e
+}
+
+
+/* Form styling adjustments */
+.form-group {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-bottom: 15px;
+  width: 100%; /* Ensure full width */
+}
+
+.form-group label {
+  width: 130px;
+  flex-shrink: 0;
+  margin: 0;
+}
+
+.form-group input,
+.form-group select {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+/* Keep existing styles for action buttons */
+.form-group.action-group {
+  display: block;
+}
+
+.form-group.action-group label {
+  width: auto;
+  margin-bottom: 5px;
+}
+
+
+.chart-container {
+  width: 200px;
+  margin: 20px;
+  display: inline-block;
+}
+
+.traffic-table{
+  width: 500px;
+  display: inline-block;
+  margin: 20px;
+  text-align: center;
+}
+
+#bandwidth-tables {
+  display: flex;
+  justify-content: center; /* Center tables horizontally */
+  align-items: center; /* Align tables in the middle vertically */
+  gap: 50px; /* Space between the two tables */
+  width: 100%; /* Ensure it spans the full width */
+  margin: auto; /* Centering the whole div if needed */
+  flex-wrap: wrap; /* Prevent overflow issues */
+}
+
+#CGM-monitor{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+  margin: auto;
+  flex-wrap: wrap;
+}
+
+#cpuChart, #gpuChart, #memoryChart, #diskChart, #cpuTempChart, #gpuTempChart {
+  border: 2px solid #474444;
+  padding: 15px;
+}
+
+#cpuChart, #memoryChart{
+  background-color: white;
+  padding: 10px;
+  transition: background-color 0.3s;
+}
+
+#cpuChart:hover, #memoryChart:hover{
+  background-color: rgb(209, 205, 205);
+}
+
+
+
+.modal-BC {
+  display: none; /* This is the default, and JS will change it to flex */
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  overflow: auto;
+  background-color: rgba(0,0,0,0.5);
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content-BC {
+  background-color: #fff;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%;
+  max-width: 500px;
+  border-radius: 10px;
+}
+
+#filter-form{
+  /* display: inline-flex; */
+  /* width:100%; */
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 10px;
+}
+
+label[for="filter-name"],
+label[for="filter-url"],
+label[for="filter-category"] {
+    display: block;
+    margin: 10px 0 5px;
+    font-weight: bold;
+}
+
+#filter-name input{
+  max-width: fit-content;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+#fixing-length{
+  width: 100%;
+  display: block;
+}
+
+#button-web-filtering {
+  width: 100%;
+
+  display: inline-flex;
+}
+
+#filter-name, #filter-url, #filter-category {
+  flex: 1;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#apply-filter, #unblock-button{
+  width:100%;
+  padding: 10px;
+  margin-top: 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+#apply-filter  {
+  background-color: #28a745;
+  color: white;
+}
+
+#apply-filter:hover {
+  background-color: #218838;
+}
+
+#unblock-button {
+  background-color: #dc3545;
+  color: white;
+}
+
+#unblock-button:hover {
+  background-color: #c82333;
+}
+
+
+#log-controls{
+  display: inline-flex;
+  gap: 10px;
+  margin: 10px 0 10px 0;
+}
+
+#search-input-log{
+  width: 300px;
+}
+
+#search-button-log, #filter-button-log, #refresh-button-log{
+  padding: 8px 12px;
+  background-color: #eb7d3e;
+  color: white;
+  border: 1px solid #eb7d3e;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+#date-filter{
+  border-radius: 3px;
+  border: 1px rgb(214, 212, 212) solid;
+}
+
+#search-button-log:hover, #filter-button-log:hover, #refresh-button-log:hover{
+  background-color: white;
+  color:#eb7d3e;
+  border: 1px solid #eb7d3e
+}
+
+
+.category-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.category-box {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  width: 180px; /* Adjusted width */
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  justify-content: space-between;
+}
+.category-text {
+  flex-grow: 1; /* Allows text to adjust */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 10px; /* Adds space between text and select */
+}
+select {
+  width: 90px; /* Fixed width */
+}
+
+.highlighted {
+  background-color: yellow !important;
+}
+
+#apply-rules{
+  padding: 8px 12px;
+  background-color: #eb7d3e;
+  color: white;
+  border: 1px solid #eb7d3e;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+#apply-rules:hover{
+  background-color: white;
+  color:#eb7d3e;
+  border: 1px solid #eb7d3e
+}
+
+
+
+.dashboard-container {
+  display: flex;         /* or display: grid; */
+  flex-wrap: wrap;       /* wrap if the screen is narrow */
+  gap: 10px;             /* space between boxes */
+  margin-top: 20px;
+}
+.dashboard-box {
+  /* border: 2px solid #000000; */
+  /* padding: 10px; */
+  width: 400px;
+  box-shadow: 4px 4px 10px rgba(0, 0, 0, 0.2);
+}
+.dashboard-box h3 {
+  margin-top: 0;
+}
+
+.dashboard-box-title{
+  background-color: #b5b9b9; 
+  padding: 10px;
+}
+
+
+
+.stats-box {
+  background-color: #ffffff;
+  /* border: 2px solid #000000; */
+  /* border-radius: 5px;  */
+  margin: 10px;
+  padding-bottom: 5px; 
+}
+
+.stats-box h3 {
+  margin: 0;
+  padding: 10px 15px;
+  background-color: #eb7d3e; /* or your chosen color */
+  color: #fff;
+  /* border-radius: 5px 5px 0 0; */
+  font-size: 1.2em;
+}
+
+.stats-container {
+  padding: 10px 15px;
+}
+
+.stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 25px;
+  font-size: 1.1em;
+}
+
+.stat-item .label {
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-item .value {
+  font-weight: bold;
+  color: #333;
+}
+
+.stat-item .value.allowed {
+  color: green; /* or #28a745 */
+}
+
+.stat-item .value.blocked {
+  color: red;   /* or #dc3545 */
+}
+
+.ips-button, .dns-button{
+  padding: 8px 12px;
+  background-color: #eb7d3e;
+  color: white;
+  border: 1px solid #eb7d3e;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.ips-button:hover, .dns-button:hover{
+  background-color: white;
+  color:#eb7d3e;
+  border: 1px solid #eb7d3e
+}
+
+.monitoring-controls input{
+  padding: 8px 12px;
+}
+
+.top-attacks-table th {
+  background-color: white;
+  color: #000000;
+  font-weight: bold;
+}
+
+.bar-bg {
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  height: 20px;
+  margin-bottom: 10px;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.bar-fill {
+  background-color: #d4a100;
+  height: 100%;
+  text-align: right;
+  padding-right: 5px;
+  color: white;
+  font-size: 12px;
+  line-height: 20px;
+  transition: background-color 0.3s, width 0.3s;
+}
+
+
+.dashboard-box-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 10px; /* adjust padding as needed */
+  background-color: #eb7d3e; /* or your chosen color */
+}
+
+/* Style the arrow button */
+.dashboard-box-arrow {
+  padding: 5px;
+  margin-right:10px;
+  text-decoration: none;
+  font-size: 1.1rem;
+  color: inherit;  /* use inherit to match surrounding text or add a specific color */
+  transition: color 0.3s ease;
+  color: #ffffff;
+}
+
+/* Optional: hover effect for visual feedback */
+.dashboard-box-arrow:hover {
+  /* color: #000000;  change this to your desired hover color */
+  background-color: #ffbb8b;
+  transition: background-color 0.5s, color 0.5s;
+}
+
+/* Container to hold all cards in one row */
+#bandwidth-summary {
+  display: flex;
+  gap: 1rem;                /* space between cards */
+  margin: 1.5rem 0;
+}
+
+/* Individual card */
+.summary-card {
+  flex: 1;                  /* all cards equal width */
+  background: #fff;
+  border-radius: 4px;
+  padding: 1rem;
+  text-align: center;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+}
+
+/* inbound = green background */
+.summary-card.inbound {
+  background: #e6f9e6;    /* very light green */
+  /* border: 1px solid #28a745; */
+}
+
+/* outbound = purple background */
+.summary-card.outbound {
+  background: #f2e6ff;    /* very light purple */
+  /* border: 1px solid #6f42c1; */
+}
+
+/* The small label at top of card */
+.summary-card .label {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+/* The big number */
+.summary-card .value {
+  font-size: 2.5rem;
+  font-weight: 600;
+  line-height: 1;
+}
+
+/* The unit (e.g. “Mbps”) */
+.summary-card .unit {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+/* Change line – reuse for both up and down */
+.summary-card .change {
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
+}
+
+/* Up = green */
+.summary-card .change.up {
+  color: #28a745;
+}
+
+/* Down = red */
+.summary-card .change.down {
+  color: #dc3545;
+}
+
+#timeFilter{
+  width: 150px;
+}
+
+/* remove default bullets & padding */
+.usage-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  background: rgb(255, 255, 255);
+}
+
+/* each row as grid: rank | name | bar | size */
+.usage-list li {
+  display: grid;
+  grid-template-columns: 32px 1fr 2fr 60px;
+  align-items: center;
+  padding: 6px 12px;
+  font-family: sans-serif;
+  font-size: 0.9rem;
+  margin: 5px;
+  margin-left: 0px;
+  margin-right: 0px;
+  padding-left: 0px;
+}
+
+/* subtle separator */
+.usage-list li + li {
+  border-top: 1px solid rgb(255, 255, 255);
+}
+
+
+/* alternating background */
+.usage-list li:nth-child(odd) {
+  background: rgb(224, 224, 224);
+}
+
+/* rank number */
+.usage-list .rank {
+  font-weight: bold;
+  text-align: right;
+  color: #000000;
+}
+
+/* process name, truncate overflow */
+.usage-list .name {
+  padding: 0 8px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: #000000;
+}
+
+/* bar container */
+.usage-list .bar-container {
+  height: 8px;
+  background: rgb(255, 255, 255);
+  border-radius: 4px;
+  overflow: hidden;
+  margin: 0 8px;
+}
+
+/* actual bar (fill) */
+.usage-list .bar {
+  height: 100%;
+  background: #4caf50;
+}
+
+/* kilobytes label */
+.usage-list .kb {
+  text-align: right;
+  color: #000000;
+  font-variant-numeric: tabular-nums;
+}

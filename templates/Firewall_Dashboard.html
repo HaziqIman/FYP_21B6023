@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Firewall Dashboard</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='dashboard.css') }}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+</head>
+
+<body>
+
+
+  
+
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-toggle" onclick="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </div>
+    {% if session.logged_in %}
+    <div class="links">
+      <!-- Each link has an icon + text. The text is in a <span> so we can hide it when collapsed. -->
+      <a href="#" onclick="showSection('main-dashboard')">
+        <i class="fas fa-home"></i>
+        <span>Dashboard</span>
+      </a>
+      <a href="#" onclick="showSection('firewall-policies')">
+        <i class="fas fa-fire"></i>
+        <span>Firewall Policies</span>
+      </a>
+      <a href="#" onclick="showSection('bandwidth-control')">
+        <i class="fas fa-chart-line"></i>
+        <span>Bandwidth Monitoring</span>
+      </a>
+      <a href="#" onclick="showSection('ips-section')">
+        <i class="fas fa-shield-alt"></i>
+        <span>Intrusion Prevention</span>
+      </a>
+      <a href="#" onclick="showSection('web-filtering')">
+        <i class="fas fa-globe"></i>
+        <span>Web Filtering</span>
+      </a>
+      <a href="#" onclick="showSection('firewall-logs')">
+        <i class="fas fa-file-alt"></i>
+        <span>Logging</span>
+      </a>
+    </div>
+    <a href="{{ url_for('logout') }}" class="logout">
+      <i class="fas fa-sign-out-alt"></i>
+      <span>Logout</span>
+    </a>
+    {% endif %}
+  </div>
+
+  <div class="header-bar">
+    <img src="{{ url_for('static', filename='logo3rd.png') }}" alt="Icon" class="header-icon">
+    Firewall v1.0</div>
+
+  <!-- Main Content -->
+  <div class="content">
+
+    <!-- Dashboard-->
+    <div id="main-dashboard" class="section">
+      <h1>Firewall Dashboard</h1>
+      <!-- "Small box" for your 2-column bar chart -->
+      <div class="dashboard-container">
+      
+        <div class="dashboard-box stats-box">
+          <h3 class="dashboard-box-title">Hardware Information</h3>
+          <div class="stat-item">
+            <span class="label">CPU: </span>
+            <span class="value">{{ hardware_info.cpu }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">RAM:</span>
+            <span class="value">{{ hardware_info.ram_gb }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Storage:</span>
+            <span class="value ">{{ hardware_info.storage_used_gb }} GB used / {{ hardware_info.storage_total_gb }} GB total</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Free Space:</span>
+            <span class="value">{{ hardware_info.storage_free_gb }} GB</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">GPU: </span>
+            <span class="value">{{ hardware_info.gpu }}</span>
+          </div>
+        </div>
+
+        <div class="dashboard-box stats-box">
+          <h3 class="dashboard-box-title">Live System Resource Usage</h3>
+        
+          <!-- CPU -->
+          <div class="stat-item">
+            <span class="label">CPU:</span>
+            <span class="value" id="cpu-used-text">Loading...</span>
+          </div>
+          <div class="bar-bg">
+            <div class="bar-fill" id="cpu-bar" style="width: 0%;">0%</div>
+          </div>
+        
+          <!-- Memory -->
+          <div class="stat-item">
+            <span class="label">Memory:</span>
+            <span class="value" id="mem-used-text">Loading...</span>
+          </div>
+          <div class="bar-bg">
+            <div class="bar-fill" id="mem-bar" style="width: 0%;">0%</div>
+          </div>
+        
+          <!-- Disk -->
+          <div class="stat-item">
+            <span class="label">Disk:</span>
+            <span class="value" id="disk-used-text">Loading...</span>
+          </div>
+          <div class="bar-bg">
+            <div class="bar-fill" id="disk-bar" style="width: 0%;">0%</div>
+          </div>
+        </div>
+
+        <div class="dashboard-box stats-box">
+          <div class="dashboard-box-header">
+            <h3 class="dashboard-box-title">Top 10 Usages</h3>
+            <a href="#" class="dashboard-box-arrow" onclick="showSection('bandwidth-control')">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+          <ul id="top-usage-list" class="usage-list">
+            <!-- JS will inject 10 <li> items here -->
+          </ul>
+        </div>
+
+        
+        <div class="dashboard-box stats-box">
+          <div class="dashboard-box-header">
+          <h3 class="dashboard-box-title">Logs Spike Chart</h3>
+          <a href="#" class="dashboard-box-arrow" onclick="showSection('firewall-logs')">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+          <!-- Spike Information Box -->
+          <div class="spike-info" style="padding: 10px; border: 1px solid #ccc; margin-bottom: 10px; background-color: #f8f8f8;">
+            <p><strong>Date:</strong> {{ spike_date }}</p>
+            <p><strong>Number of Logs:</strong> {{ spike_count }}</p>
+          </div>
+          <!-- Canvas for the Chart.js line chart -->
+          <canvas id="logsChart" width="400" height="200"></canvas>
+        </div>
+
+        <div class="dashboard-box stats-box">
+          <div class="dashboard-box-header">
+            <h3 class="dashboard-box-title">Traffic Chart</h3>
+            <a href="#" class="dashboard-box-arrow" onclick="showSection('ips-section')">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+            </a>
+          </div>
+          <!-- Show normal vs anomaly chart as an <img> -->
+          <img 
+            src="{{ url_for('traffic_chart') }}" 
+            alt="Traffic Chart" 
+            style="max-width: 100%;"
+          />
+        </div>
+  
+        <!-- Box #2: Policy Count -->
+        <!-- Example: Firewall Policies Box -->
+      <div class="dashboard-box stats-box">
+        <div class="dashboard-box-header">
+        <h3>Firewall Policies</h3>
+        <a href="#" class="dashboard-box-arrow" onclick="showSection('firewall-policies')">
+          <i class="fa-solid fa-arrow-up-right-from-square"></i>
+        </a>
+      </div>
+        <div class="stats-container">
+          <div class="stat-item">
+            <span class="label">Total Number of Policies:</span>
+            <span class="value">{{ policy_count }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Allowed Policies:</span>
+            <!-- Show allowed in green -->
+            <span class="value allowed">{{ allowed_count }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Blocked Policies:</span>
+            <!-- Show blocked in red -->
+            <span class="value blocked">{{ blocked_count }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Enabled Policies:</span>
+            <!-- Show blocked in red -->
+            <span class="value allowed">{{ enabled_count }}</span>
+          </div>
+          <div class="stat-item">
+            <span class="label">Disabled Policies:</span>
+            <!-- Show blocked in red -->
+            <span class="value blocked">{{ disabled_count }}</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="dashboard-box stats-box">
+        <div class="dashboard-box-header">
+          <h3 class="dashboard-box-title">DNS Filtering Status</h3>
+          <a href="#" class="dashboard-box-arrow" onclick="showSection('web-filtering')">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+      </div>
+        <div class="stat-item">
+          <span class="label">Interface:</span>
+          <!-- Show blocked in red -->
+          <span class="value">{{ dns_info.interface }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">DNS Set To:</span>
+          <!-- Show blocked in red -->
+          <span class="value">{{ dns_info.dns_server }}</span>
+        </div>
+        <div class="stat-item">
+          <span class="label">Status:</span>
+          <!-- Show blocked in red -->
+          <span class="value ">{{ dns_info.status }}</span>
+        </div>
+      </div>
+
+      <div class="dashboard-box stats-box">
+        <div class="dashboard-box-header">
+          <h3 class="dashboard-box-title">Top 10 Attack Types</h3>
+          <a href="#" class="dashboard-box-arrow" onclick="showSection('ips-section')">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+          </a>
+        </div>
+
+        {% if top_attacks_enumerated %}
+        <table class="top-attacks-table" border="1" style="border-collapse: collapse;">
+          <thead >
+            <tr>
+              <th>Rank</th>
+              <th>Attack Type</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for idx, attack_type, count in top_attacks_enumerated %}
+              <tr>
+                <td>{{ idx }}</td>
+                <td>{{ attack_type }}</td>
+                <td>{{ count }}</td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <p>No attacks detected yet.</p>
+        {% endif %}
+      </div>
+
+      </div>
+      <!-- Later you can add more small boxes for firewall policy counts, etc. -->
+  </div>
+
+    <!-- Firewall Policies Section -->
+    <div id="firewall-policies" class="section">
+      <h1 style="margin:20px 0px 20px 0px">Active Firewall Policies</h1>
+
+      <!-- Button to open the policy creation modal -->
+      <div class="action-bar">
+        <button id="create-policy-button">Create Policy</button>
+        <input type="text" id="search-input" placeholder="Search rule name..." />
+        <button id="search-button">Search</button>
+        <button id="refresh-button" title="Refresh Policies">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+      
+      
+      <!-- Table to display existing firewall policies -->
+      <div id="table-container">
+      <table id="policy-table" border="1">
+          <thead>
+              <tr>
+                  <th>Name</th>
+                  <th>Local IP</th>
+                  <th>Remote IP</th>
+                  <th>Direction</th>
+                  <th>Action</th>
+                  <th>Protocol</th>
+                  <th>Port</th>
+                  <th>Enabled</th>
+              </tr>
+          </thead>
+          <tbody>
+              <!-- Policies will be dynamically populated here -->
+          </tbody>
+      </table>
+    </div>
+
+      <!-- Modal for adding a new firewall policy -->
+      <div id="policy-modal" class="modal">
+        <div class="modal-content">
+            <span id="close-modal" class="close">&times;</span>
+            <h2 style="margin:0; margin-bottom:10px;">Create a New Firewall Policy</h2>
+            <form id="policy-form">
+                
+                <div class="form-group">
+                    <label for="policy-name">Policy Name</label>
+                    <input type="text" id="policy-name" name="policy-name" required>
+                </div>
+    
+                <div class="form-group">
+                    <label for="source-ip">Source IP</label>
+                    <input type="text" id="source-ip" name="source-ip" placeholder="e.g., 192.168.1.1">
+                </div>
+    
+                <div class="form-group">
+                    <label for="destination-ip">Destination IP</label>
+                    <input type="text" id="destination-ip" name="destination-ip" placeholder="e.g., 192.168.1.2">
+                </div>
+    
+                <div class="form-group">
+                    <label for="port">Port</label>
+                      <input type="text" id="port" name="port" placeholder="e.g., 80">
+                </div>
+    
+                <div class="form-group">
+                    <label for="protocol">Protocol</label>
+                    <select id="protocol" name="protocol" required>
+                        <option value="TCP">TCP</option>
+                        <option value="UDP">UDP</option>
+                        <option value="ICMPv4">ICMP</option>
+                    </select>
+                </div>
+    
+                <div class="form-group">
+                    <label for="direction">Direction</label>
+                    <select id="direction" name="direction" required>
+                        <option value="Inbound">Inbound</option>
+                        <option value="Outbound">Outbound</option>
+                    </select>
+                </div>
+    
+                <div class="form-group action-group">
+                  <label>Action</label>
+                  <div class="toggle-buttons">
+                      <button type="button" id="accept-btn" class="toggle-btn active">
+                          ✔ ACCEPT
+                      </button>
+                      <button type="button" id="deny-btn" class="toggle-btn">
+                          ❌ DENY
+                      </button>
+                  </div>
+              </div>
+    
+                <div class="form-buttons">
+                    <button type="submit" class="ok-btn">OK</button>
+                    <button type="button" class="cancel-btn">Cancel</button>
+                </div>
+            </form>
+        </div>
+    </div>
+  </div>
+
+    <!-- Bandwidth Control & Monitoring Section -->
+    <div id="bandwidth-control" class="section">
+      <h1>Bandwidth Monitoring</h1>
+
+      <label for="timeFilter">View:</label>
+      <select id="timeFilter">
+        <option value="minute">Last Minute</option>
+        <option value="hour" selected>Last Hour</option>
+        <option value="day">Last Day</option>
+      </select>
+
+      <div id="bandwidth-summary">
+        <!-- Inbound Min -->
+        <div class="summary-card inbound">
+          <div class="label">Min Traffic In</div>
+          <div class="value"><span id="inboundMin">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      
+        <!-- Inbound Max -->
+        <div class="summary-card inbound">
+          <div class="label">Max Traffic In</div>
+          <div class="value"><span id="inboundMax">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      
+        <!-- Inbound Avg -->
+        <div class="summary-card inbound">
+          <div class="label">Avg Traffic In</div>
+          <div class="value"><span id="inboundAvg">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      
+        <!-- Outbound Min -->
+        <div class="summary-card outbound">
+          <div class="label">Min Traffic Out</div>
+          <div class="value"><span id="outboundMin">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      
+        <!-- Outbound Max -->
+        <div class="summary-card outbound">
+          <div class="label">Max Traffic Out</div>
+          <div class="value"><span id="outboundMax">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      
+        <!-- Outbound Avg -->
+        <div class="summary-card outbound">
+          <div class="label">Avg Traffic Out</div>
+          <div class="value"><span id="outboundAvg">-</span></div>
+          <div class="unit">Mbps</div>
+        </div>
+      </div>
+      
+
+
+      <div id="bandwidth-usage">
+        <h3>Current Bandwidth Usage</h3>
+        <div style="height: 300px;">
+          <!-- Canvas for our Chart.js line chart -->
+          <canvas id="bandwidthChart"></canvas>
+        </div>
+      </div>
+
+
+
+
+      <h2>System Monitor</h2>
+
+      <div id="CGM-monitor">
+
+        <!-- Disk Usage Chart -->
+        <div class="chart-container">
+          <canvas id="diskChart"></canvas>
+          <p style="text-align: center;">C Drive Usage</p>
+        </div>
+
+        <!-- GPU Temperature Chart -->
+        <div class="chart-container">
+            <canvas id="gpuTempChart"></canvas>
+            <p style="text-align: center;">GPU Temperature</p>
+        </div>
+
+        <!-- GPU Usage Chart -->
+        <div class="chart-container">
+          <canvas id="gpuChart"></canvas>
+          <p style="text-align: center;">GPU Usage</p>
+        </div>
+
+        <!-- CPU Usage Chart -->
+        <div class="chart-container">
+          <canvas id="cpuChart"></canvas>
+          <p style="text-align: center;">CPU Usage</p>
+        </div>
+        
+        <!-- Memory Usage Chart -->
+        <div class="chart-container">
+          <canvas id="memoryChart"></canvas>
+          <p style="text-align: center;">Memory Usage</p>
+        </div>
+      </div>
+      
+    </div>
+
+
+    <!-- Intrusion Prevention System Section -->
+    <div id="ips-section" class="section">
+      <h1>Intrusion Prevention System</h1>
+      <p>Current Email: {{ current_email }}</p>
+      <div class="monitoring-controls">
+        <input type="email" id="user-email" placeholder="Enter your email for alerts" required />
+        <button class="ips-button" id="start-monitoring">Start Anomaly Detection</button>
+        <button class="ips-button" id="stop-monitoring">Stop Anomaly Detection</button>
+      </div>
+      
+      <!-- Updated Table Structure -->
+      <table id="anomalies-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Reconstruction Error</th>
+            <th>Hex Code</th>
+            <th>Source IP</th>
+            <th>Destination IP</th>
+            <th>Attack Type</th>
+            <th>Attack Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="anomalies-body">
+          <!-- Rows will be dynamically added here -->
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Web Filtering Section -->
+    <div id="web-filtering" class="section">
+      <h1>Web Filtering</h1>
+      <div id="fixing_length">
+      <form id="filter-form" method="POST" action="/apply-filter">
+        <label for="filter-name">Filter Name:</label>
+        <input id="filter-name" name="filter-name" type="text" placeholder="Give your filter a name" required>
+    
+        <label for="filter-url">URL to Block:</label>
+        <input id="filter-url" type="text" name="filter-url" placeholder="e.g., google.com"required>
+        
+        <label for="filter-category">Category:</label>
+        <select id="filter-category" name="filter-category">
+          <option value="adult">Adult Content</option>
+          <option value="social-media">Social Media</option>
+          <option value="malicious">Malicious Sites</option>
+        </select>
+        
+        <input type="hidden" id="filter-action" name="filter-action" value="block">
+        <div id="button-web-filtering">
+          <button type="submit" id="apply-filter">Apply Filter</button>
+          <button type="button" id="unblock-button">Unblock URL</button>
+        </div>
+      </form>
+    </div>
+
+      <!-- DNS Filtering Section -->
+      <h3>DNS Filtering</h3>
+      <div id="dns-controls">
+          <button class="dns-button" id="enable-dns">Enable DNS Filtering</button>
+          <button class="dns-button" id="disable-dns">Disable DNS Filtering</button>
+      </div>
+    
+    <h3>Allow/Disallow Categories</h3>
+    <div class="category-container">
+      <!-- Categories will be inserted dynamically -->
+    </div>
+    <button id="apply-rules">Apply</button>
+
+    
+
+  </div>
+
+    <!-- Firewall Logs Section -->
+    <div id="firewall-logs" class="section">
+      <h1>Firewall Logs</h1>
+      
+      <div id="log-controls">
+        <input type="text" id="search-input-log" placeholder="Search description...">
+        <button id="search-button-log">Search</button>
+    
+        <input type="date" id="date-filter">
+        <button id="filter-button-log">Filter</button>
+        <button id="refresh-button-log" title="Refresh Policies">
+          <i class="fas fa-sync-alt"></i>
+        </button>
+      </div>
+    
+      <div id="logs">
+        <table border="1">
+          <thead>
+            <tr>
+              <th style="width: 20%;">Timestamp</th>
+              <th style="width: 80%;">Description</th>
+            </tr>
+          </thead>
+          <tbody id="logs-table">
+            <!-- Logs will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+  
+  <script>
+    async function fetchTopUsage() {
+      try {
+        const res = await fetch('/top_network_usage');
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+        const list = document.getElementById('top-usage-list');
+        list.innerHTML = '';
+  
+        if (!data.length) {
+          list.innerHTML = '<li style="padding:12px; text-align:center; color:#fff">No network I/O detected</li>';
+          return;
+        }
+  
+        // ensure we have exactly ten slots
+        const top10 = data.slice(0, 10);
+        const maxBytes = top10[0].bytes || 1;
+  
+        top10.forEach((proc, i) => {
+          const li = document.createElement('li');
+  
+          // rank
+          const rank = Object.assign(document.createElement('span'), {
+            className: 'rank',
+            textContent: (i + 1) + '.'
+          });
+          li.appendChild(rank);
+  
+          // name
+          const name = Object.assign(document.createElement('span'), {
+            className: 'name',
+            textContent: proc.name
+          });
+          li.appendChild(name);
+  
+          // bar
+          const barContainer = document.createElement('div');
+          barContainer.className = 'bar-container';
+          const bar = document.createElement('div');
+          bar.className = 'bar';
+          // percent of max (min 5%)
+          const pct = Math.max((proc.bytes / maxBytes) * 100, 5);
+          bar.style.width = pct + '%';
+          barContainer.appendChild(bar);
+          li.appendChild(barContainer);
+  
+          // size label
+          const kb = Object.assign(document.createElement('span'), {
+            className: 'kb',
+            textContent: (proc.bytes / 1024).toFixed(1) + ' KB'
+          });
+          li.appendChild(kb);
+  
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.error('Error loading top usage:', err);
+      }
+    }
+  
+    // initial load + refresh every 10 s
+    fetchTopUsage();
+    setInterval(fetchTopUsage, 10_000);
+  </script>
+  
+  <script>
+    // When the user enters an email, send it to the server
+    document.getElementById('user-email').addEventListener('change', function() {
+      fetch('/set_email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: this.value })
+      })
+      .then(response => response.json())
+      .then(data => {
+        console.log('Email updated:', data);
+      })
+      .catch(error => console.error('Error:', error));
+    });
+  </script>
+    
+  <script>
+  // Ensure the variables are passed from Flask (using the tojson filter)
+  var chartLabels = {{ labels|tojson }};
+  var chartData = {{ counts|tojson }};
+  
+  // Create the chart when the DOM is fully loaded
+  document.addEventListener('DOMContentLoaded', function() {
+    var ctx = document.getElementById('logsChart').getContext('2d');
+    var logsChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          label: 'Number of Logs per Date',
+          data: chartData,
+          fill: false,
+          borderColor: 'blue',
+          tension: 0.1
+        }]
+      },
+      options: {
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: 'Date'
+            }
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Log Count'
+            }
+          }
+        }
+      }
+    });
+  });
+</script>
+
+  <script>
+    // JavaScript to toggle visibility of sections
+    function showSection(sectionId) {
+      // Hide all sections
+      const sections = document.querySelectorAll('.section');
+      sections.forEach(section => section.style.display = 'none');
+
+      // Show the selected section
+      const selectedSection = document.getElementById(sectionId);
+      selectedSection.style.display = 'block';
+    }
+
+    // Initially show the firewall policies section
+    window.onload = function() {
+      showSection('main-dashboard');
+    };
+
+    
+  </script>
+
+  <script>
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+  </script>
+
+<!-- Process Details Modal -->
+<div id="processModal-BC" class="modal-BC" style="display:none;">
+  <div class="modal-content-BC" style="background: #fff; padding: 20px; border-radius: 5px; width: 80%; max-width: 500px; margin: auto; position: relative;">
+    <span id="closeModal-BC" style="position: absolute; top: 10px; right: 15px; cursor: pointer; font-size: 1.5rem;">&times;</span>
+    <h2 id="modalTitle-BC">Resource Processes</h2>
+    <ul id="processList-BC"></ul>
+  </div>
+</div>
+
+
+</body>
+</html>
