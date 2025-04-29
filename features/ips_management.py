@@ -121,7 +121,7 @@ def show_notification(source_ip, destination_ip, reconstruction_error, timestamp
 
 import hexpacketparser
 
-SENDGRID_API_KEY = "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"  
+SENDGRID_API_KEY = "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"  
 
 def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, timestamp, user_email, attack_type=None):
     """
@@ -219,26 +219,24 @@ def send_email_alert(hex_data, source_ip, destination_ip, reconstruction_error, 
 
 def block_ip(ip_address, direction):
     """
-    Create a Windows Firewall rule to block the given IP in the specified direction ('in' or 'out').
-    Returns the rule name on success, or None on failure.
+    Create one PowerShell rule that truly blocks ALL protocols
+    (including ICMP) in the given direction.
     """
     rule_name = f"AnomalyBlock_{direction}_{ip_address}"
-    command = [
-        "netsh", "advfirewall", "firewall", "add", "rule",
-        f"name={rule_name}",
-        f"dir={direction}",
-        "action=block",
-        f"remoteip={ip_address}",
-        "enable=yes"
+    ps_cmd = [
+        "powershell", "-Command",
+        f"New-NetFirewallRule "
+        f"-DisplayName '{rule_name}' "
+        f"-Direction {'Inbound' if direction=='in' else 'Outbound'} "
+        f"-Action Block "
+        f"-RemoteAddress {ip_address} "
+        f"-Protocol Any "
+        f"-Profile Any"
     ]
-    try:
-        subprocess.run(command, check=True, capture_output=True)
-        print(f"Successfully created firewall rule: {rule_name}")
-        firewall_logs.add_log_entry("Anomaly detected", rule_name)
-        return rule_name
-    except subprocess.CalledProcessError as e:
-        print(f"Failed to create firewall rule: {e}\n{e.output}")
-        return None
+    subprocess.run(ps_cmd, check=True)
+    firewall_logs.add_log_entry("Anomaly detected", rule_name)
+    print(f"✔ Created PowerShell rule: {rule_name}")
+    return rule_name
 
 def unblock_ip(rule_name):
     """
